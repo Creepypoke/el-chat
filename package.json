@@ -1,0 +1,23 @@
+{
+  "name": "el-chat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "elm-make frontend/Main.elm --output=dist/elm.js",
+    "watch": "chokidar \"**/*.elm\" -c \"elm-make frontend/Main.elm --output dist/elm.js\" --initial",
+    "dev": "node_modules/.bin/nodemon backend/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chokidar-cli": "^1.2.0",
+    "elm": "^0.18.0",
+    "nodemon": "^1.17.2"
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "express-ws": "^3.0.0"
+  }
+}
