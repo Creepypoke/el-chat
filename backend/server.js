@@ -9,15 +9,15 @@ const appWs = expressWs(app)
 app.use(express.static(path.join(process.cwd(), "dist")))
 
 
-app.get("api/rooms", (req, res) => {
+app.get("/api/rooms", (req, res) => {
 
   const rooms = [
-    { name: "room 1", id: 1, users: [] },
-    { name: "room 2", id: 2, users: [{ name: "user1" }, { name: "user2" }, { name: "user3" }]}
+    { name: "room 1", id: "1", users: [] },
+    { name: "room 2", id: "2", users: [{ name: "user1" }, { name: "user2" }, { name: "user3" }]}
   ]
 
   res.setHeader("Content-Type", "application/json")
-  res.send(JSON.stringify({ a: 1 }));
+  res.send(JSON.stringify(rooms));
 })
 
 app.get("*", (req, res) => {

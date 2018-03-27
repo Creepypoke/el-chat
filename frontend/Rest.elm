@@ -9,8 +9,8 @@ import RemoteData
 
 getRooms : Cmd Msg
 getRooms =
-  list roomDecoder 
-    |> Http.get "/news"
+  list roomDecoder
+    |> Http.get "/api/rooms"
     |> RemoteData.sendRequest
     |> Cmd.map RoomsResponse
 

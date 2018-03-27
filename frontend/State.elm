@@ -1,6 +1,7 @@
 module State exposing (init, update)
 
 import Types exposing (..)
+import Rest exposing (getRooms)
 import Navigation exposing (Location)
 import RemoteData
 
@@ -14,13 +15,15 @@ initialModel =
 
 init : Location -> (Model, Cmd Msg)
 init location =
-  ( initialModel, Cmd.none )
+  ( initialModel, getRooms )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of 
+  case msg of
     RoomsResponse rooms ->
       ( { model | rooms = rooms }, Cmd.none )
-    _ ->
+    LocationChanged _ ->
       ( model, Cmd.none )
+    RequestRooms ->
+      ( model, getRooms )

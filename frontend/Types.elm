@@ -4,16 +4,16 @@ import RemoteData exposing (WebData)
 import Navigation exposing (Location)
 
 
-type alias Model =  
+type alias Model =
   { name : String
   , rooms : WebData (List Room)
   }
 
 
-type alias Room = 
+type alias Room =
   { id : String
   , name : String
-  , users : List User 
+  , users : List User
   }
 
 
@@ -21,11 +21,12 @@ type alias User =
   { name : String }
 
 
-type Msg 
+type Msg
   = LocationChanged Location
+  | RequestRooms
   | RoomsResponse (WebData (List Room))
 
 
-type Route 
+type Route
   = HomeRoute
-  
+
