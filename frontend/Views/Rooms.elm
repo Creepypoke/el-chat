@@ -1,6 +1,7 @@
 module Views.Rooms exposing (..)
 
 import Html exposing (..)
+import Html.Attributes exposing (href)
 import Types exposing (..)
 import RemoteData exposing (WebData)
 
@@ -35,4 +36,12 @@ viewRooms rooms =
 roomView : Room -> Html Msg
 roomView room =
   div []
-    [ text room.name ]
+    [ a [ href ("#" ++ room.id) ]
+      [ text room.name ]
+    , text (roomUsersCount room)
+    ]
+
+
+roomUsersCount : Room -> String
+roomUsersCount room =
+  " [" ++ toString (List.length room.users) ++"]"
