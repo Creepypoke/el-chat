@@ -2,11 +2,14 @@ module State exposing (init, update)
 
 import Types exposing (..)
 import Navigation exposing (Location)
+import RemoteData
 
 
 initialModel : Model
 initialModel =
-  { name = "" }
+  { name = ""
+  , rooms = RemoteData.Loading
+  }
 
 
 init : Location -> (Model, Cmd Msg)
@@ -16,4 +19,8 @@ init location =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  ( model, Cmd.none )
+  case msg of 
+    RoomsResponse rooms ->
+      ( { model | rooms = rooms }, Cmd.none )
+    _ ->
+      ( model, Cmd.none )

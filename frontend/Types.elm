@@ -1,17 +1,19 @@
 module Types exposing (..)
 
+import RemoteData exposing (WebData)
 import Navigation exposing (Location)
 
 
 type alias Model =  
   { name : String
+  , rooms : WebData (List Room)
   }
 
 
 type alias Room = 
-  { name : String
+  { id : String
+  , name : String
   , users : List User 
-  , id : String
   }
 
 
@@ -21,6 +23,7 @@ type alias User =
 
 type Msg 
   = LocationChanged Location
+  | RoomsResponse (WebData (List Room))
 
 
 type Route 
