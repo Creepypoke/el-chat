@@ -1,6 +1,7 @@
 const path = require("path")
 const express = require("express")
 const expressWs = require("express-ws")
+const bodyParser = require("body-parser")
 const MongoClient = require("mongodb").MongoClient
 
 const config = require("./config")
@@ -10,6 +11,8 @@ const app = express()
 const appWs = expressWs(app)
 
 app.use(express.static(path.join(process.cwd(), "dist")))
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 const dbAuthOptions = {
   auth: {
