@@ -1,30 +1,44 @@
+const path = require("path")
 const express = require("express")
 const expressWs = require("express-ws")
+const MongoClient = require("mongodb").MongoClient
 
-const path = require("path")
+const config = require("./config")
+const routes = require("./routes")
 
 const app = express()
 const appWs = expressWs(app)
 
 app.use(express.static(path.join(process.cwd(), "dist")))
 
+const dbAuthOptions = {
+  auth: {
+    user: config.db.user,
+    password: config.db.password
+  }
+}
 
-app.get("/api/rooms", (req, res) => {
+MongoClient.connect(config.db.url, dbAuthOptions, (err, client) => {
+  if (err) throw err
 
-  const rooms = [
-    { name: "room 1", id: "1", users: [] },
-    { name: "room 2", id: "2", users: [{ name: "user1" }, { name: "user2" }, { name: "user3" }]}
-  ]
+  const db = client.db(config.db.name)
 
-  res.setHeader("Content-Type", "application/json")
-  res.send(JSON.stringify(rooms));
+  routes(app, db)
+  
+  app.use(function (err, req, res, next) {
+    console.error(err.stack)
+    res.status(500).send('Something broke!')
+  })
+  
+  startApp()
 })
 
-app.get("*", (req, res) => {
-  const indexPath = path.join(process.cwd(), "dist", "index.html")
-  res.sendFile(indexPath)
-})
 
-app.listen(3000, () => {
-  console.log("El-Chat app listening on port 3000")
-})
+
+function startApp () {
+  const port = config.port
+
+  app.listen(port, () => {
+    console.log("El-Chat app listening on http://localhost:" + port)
+  })
+}
