@@ -1,3 +1,5 @@
+const path = require("path")
+
 const utils = require("./utils")
 
 module.exports = (app, db) => {
@@ -27,7 +29,6 @@ module.exports = (app, db) => {
       res.status(201).json({ id: result.insertedId})  
     })
   })
-
 
   app.get("*", (req, res) => {
     const indexPath = path.join(process.cwd(), "dist", "index.html")

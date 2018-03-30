@@ -7,6 +7,7 @@ import Navigation exposing (Location)
 type alias Model =
   { name : String
   , rooms : WebData (List Room)
+  , currentRoute : Route
   }
 
 
@@ -23,10 +24,14 @@ type alias User =
 
 type Msg
   = LocationChanged Location
+  | NewUrl String
   | RequestRooms
   | RoomsResponse (WebData (List Room))
+  | JoinRoom Room
 
 
 type Route
   = HomeRoute
-
+  | SignUpRoute
+  | SignInRoute
+  | NotFoundRoute

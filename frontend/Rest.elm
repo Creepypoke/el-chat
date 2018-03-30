@@ -27,7 +27,3 @@ userDecoder : Decoder User
 userDecoder =
   decode User
     |> required "name" string
-
-
-underscoreIdDecoder =
-  123

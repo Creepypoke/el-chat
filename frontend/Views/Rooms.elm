@@ -2,6 +2,7 @@ module Views.Rooms exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (href)
+import Html.Events exposing (onClick)
 import Types exposing (..)
 import RemoteData exposing (WebData)
 
@@ -39,6 +40,8 @@ roomView room =
     [ a [ href ("#" ++ room.id) ]
       [ text room.name ]
     , text (roomUsersCount room)
+    , button [ onClick (JoinRoom room) ] 
+        [ text "Join" ]
     ]
 
 
