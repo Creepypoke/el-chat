@@ -1,6 +1,7 @@
 module Views.SignUp exposing (signUpView)
 
 import Html exposing (..)
+import Html.Events exposing (onInput)
 import Html.Attributes exposing (..)
 import Types exposing (..)
 
@@ -14,9 +15,11 @@ signUpView model =
         [ label [ for "name" ]
             [ text "Name" ]
         , br [] []
-        , input 
+        , input
             [ id "name"
             , type_ "text"
+            , value model.auth.name
+            , onInput UpdateName
             ]
             []
         ]
@@ -24,9 +27,10 @@ signUpView model =
         [ label [ for "password" ]
             [ text "Password" ]
         , br [] []
-        , input 
+        , input
             [ id "password"
             , type_ "password"
+            , onInput UpdatePassword
             ]
             []
         ]
@@ -34,9 +38,10 @@ signUpView model =
           [ label [ for "password-confirm" ]
               [ text "Password Confirm" ]
           , br [] []
-          , input 
+          , input
               [ id "password-confirm"
               , type_ "password"
+              , onInput UpdatePasswordConfirm
               ]
               []
           ]

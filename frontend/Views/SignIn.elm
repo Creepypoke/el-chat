@@ -1,6 +1,7 @@
 module Views.SignIn exposing (signInView)
 
 import Html exposing (..)
+import Html.Events exposing (onInput)
 import Html.Attributes exposing (..)
 import Types exposing (..)
 
@@ -14,9 +15,11 @@ signInView model =
         [ label [ for "name" ]
             [ text "Name" ]
         , br [] []
-        , input 
+        , input
             [ id "name"
             , type_ "text"
+            , value model.auth.name
+            , onInput UpdateName
             ]
             []
         ]
@@ -24,9 +27,10 @@ signInView model =
         [ label [ for "password" ]
             [ text "Password" ]
         , br [] []
-        , input 
+        , input
             [ id "password"
             , type_ "password"
+            , onInput UpdatePassword
             ]
             []
         ]
