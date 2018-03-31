@@ -13,6 +13,7 @@ const appWs = expressWs(app)
 app.use(express.static(path.join(process.cwd(), "dist")))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.config = config
 
 const dbAuthOptions = {
   auth: {
@@ -27,12 +28,12 @@ MongoClient.connect(config.db.url, dbAuthOptions, (err, client) => {
   const db = client.db(config.db.name)
 
   routes(app, db)
-  
+
   app.use(function (err, req, res, next) {
     console.error(err.stack)
     res.status(500).send('Something broke!')
   })
-  
+
   startApp()
 })
 

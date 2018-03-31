@@ -5,7 +5,7 @@ import Navigation exposing (Location)
 
 
 type alias Model =
-  { name : String
+  { user : User
   , rooms : WebData (List Room)
   , currentRoute : Route
   , auth : Auth
@@ -19,10 +19,18 @@ type alias Auth =
   , authenticated : Bool
   }
 
+
 type alias Room =
   { id : String
   , name : String
   , users : List User
+  }
+
+
+type alias Message =
+  { id : String
+  , from : User
+  , text : String
   }
 
 

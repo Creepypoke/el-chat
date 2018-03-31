@@ -9,7 +9,7 @@ import RemoteData
 
 initialModel : Location -> Model
 initialModel location =
-  { name = ""
+  { user = { name = "" }
   , rooms = RemoteData.Loading
   , currentRoute = extractRoute location
   , auth = emptyAuth
