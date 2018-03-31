@@ -3,8 +3,11 @@ module Views.Rooms exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (href)
 import Html.Events exposing (onClick)
-import Types exposing (..)
 import RemoteData exposing (WebData)
+
+import Types exposing (..)
+import Views.Helpers exposing (..)
+import Utils exposing (onClickNewUrl)
 
 roomsView : WebData(List Room) -> Html Msg
 roomsView rooms =
@@ -37,14 +40,16 @@ viewRooms rooms =
 roomView : Room -> Html Msg
 roomView room =
   div []
-    [ a [ href ("#" ++ room.id) ]
+    [ a [ onClickNewUrl (roomUrl room),  href (roomUrl room) ]
       [ text room.name ]
     , text (roomUsersCount room)
-    , button [ onClick (JoinRoom room) ] 
-        [ text "Join" ]
     ]
-
 
 roomUsersCount : Room -> String
 roomUsersCount room =
   " [" ++ toString (List.length room.users) ++"]"
+
+
+roomUrl : Room -> String
+roomUrl room =
+  "/rooms/" ++ room.id

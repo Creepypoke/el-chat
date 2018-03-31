@@ -45,4 +45,5 @@ type Route
   = HomeRoute
   | SignUpRoute
   | SignInRoute
+  | RoomRoute String
   | NotFoundRoute

@@ -1,8 +1,10 @@
 module Routing exposing (..)
 
-import Navigation exposing (Location)
 import UrlParser exposing (..)
+import Navigation exposing (Location)
+
 import Types exposing (..)
+
 
 
 extractRoute : Location -> Route
@@ -20,4 +22,5 @@ matchRoute =
     [ map HomeRoute top
     , map SignUpRoute (s "sign-up")
     , map SignInRoute (s "sign-in")
+    , map RoomRoute (s "rooms" </> string)
     ]
