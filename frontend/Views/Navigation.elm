@@ -1,27 +1,34 @@
 module Views.Navigation exposing (navigationView)
 
 import Html exposing (..)
-import Html.Attributes exposing (href)
 
 import Types exposing (..)
-import Utils exposing (onClickNewUrl)
+import Views.Helpers exposing (..)
 
 
 navigationView : Model -> Html Msg
 navigationView model =
-  div []
-    [ ul [] 
+  let
+    authLinks = 
+      case model.jwt of
+        Nothing ->
+          [ li []
+            [ link "/sign-in" (text "Sign In") [] ]
+          , li []
+            [ link "/sign-up" (text "Sign Up") [] ]
+          ]
+        Just jwt ->
+          [ li []
+            [ link "/sign-out" (text "Sign Out") [] ]
+          ]
+    commonLinks =
       [ li []
-        [  a [ onClickNewUrl "/sign-in", href "/sign-in" ]
-            [ text "Sign In" ] 
-        ]
-      , li []
-        [  a [ onClickNewUrl "/sign-up", href "/sign-up" ]
-            [ text "Sign Up" ] 
-        ]
-      , li []
-        [  a [onClickNewUrl "/", href "/" ]
-            [ text "Home" ] 
-        ]
+          [ link "/" (text "Home") [] ]
       ]
-    ]
+  in
+    div []
+      [ ul []
+        (List.concat [commonLinks, authLinks])
+      ]
+
+

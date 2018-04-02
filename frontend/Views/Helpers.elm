@@ -1,14 +1,13 @@
 module Views.Helpers exposing (..)
 
 import Html exposing (..)
+import Html.Attributes exposing (href)
 
 import Types exposing (..)
+import Utils exposing (..)
 
 
-ifAuthenticated : Model -> Html Msg -> Html Msg
-ifAuthenticated model view =
-  if model.auth.authenticated then
-    view
-  else
-    text ""
-
+link : String -> Html Msg -> List String -> Html Msg
+link url content classes =
+  a [onClickNewUrl url, href url ]
+    [ content ]

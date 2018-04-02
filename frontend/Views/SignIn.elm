@@ -3,14 +3,16 @@ module Views.SignIn exposing (signInView)
 import Html exposing (..)
 import Html.Events exposing (onInput)
 import Html.Attributes exposing (..)
-import Types exposing (..)
 
+import Types exposing (..)
+import Utils exposing (..)
 
 signInView : Model -> Html Msg
 signInView model =
   div []
     [ h1 [] [ text "Sing In"]
-    , Html.form []
+    , Html.form 
+      [ onClickSend SubmitSignInForm ]
       [ div []
         [ label [ for "name" ]
             [ text "Name" ]

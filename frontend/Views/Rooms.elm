@@ -2,7 +2,6 @@ module Views.Rooms exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (href)
-import Html.Events exposing (onClick)
 import RemoteData exposing (WebData)
 
 import Types exposing (..)

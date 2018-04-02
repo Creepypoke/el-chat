@@ -1,10 +1,11 @@
 module State exposing (init, update)
 
-import Types exposing (..)
-import Rest exposing (getRooms)
-import Routing exposing (extractRoute)
-import Navigation exposing (Location, newUrl)
 import RemoteData
+import Navigation exposing (Location, newUrl)
+
+import Types exposing (..)
+import Rest exposing (getRooms, signIn, signUp)
+import Routing exposing (extractRoute)
 
 
 initialModel : Location -> Model
@@ -13,6 +14,8 @@ initialModel location =
   , rooms = RemoteData.Loading
   , currentRoute = extractRoute location
   , auth = emptyAuth
+  , jwt = Nothing
+  , messages = []
   }
 
 
@@ -23,6 +26,7 @@ emptyAuth =
   , passwordConfirm = ""
   , authenticated = False
   }
+
 
 init : Location -> (Model, Cmd Msg)
 init location =
@@ -47,7 +51,20 @@ update msg model =
     UpdatePassword newPassword ->
       ( { model | auth = updateAuthPassword model.auth newPassword }, Cmd.none )
     UpdatePasswordConfirm newPasswordConfirm ->
-      ( model, Cmd.none )
+      ( { model | auth = updateAuthPasswordConfirm model.auth newPasswordConfirm }, Cmd.none )
+    SubmitSignInForm ->
+      ( model, signIn model.auth )
+    SubmitSignUpForm ->
+      ( model, signUp model.auth )
+    SignedIn res ->
+      case res of
+        Result.Ok jwt ->
+          { model | jwt = Just jwt } |> update (NewUrl "/")
+        Result.Err err ->
+          let 
+            newMessages = toString(err) :: model.messages
+          in
+            ( { model | messages = newMessages }, Cmd.none )
 
 
 updateAuthName : Auth -> String -> Auth

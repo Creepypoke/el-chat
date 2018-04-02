@@ -30,6 +30,8 @@ view model =
               notFoundView
         NotFoundRoute ->
           notFoundView
+    , div []
+      (List.map text model.messages)
     ]
 
 

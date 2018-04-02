@@ -3,14 +3,16 @@ module Views.SignUp exposing (signUpView)
 import Html exposing (..)
 import Html.Events exposing (onInput)
 import Html.Attributes exposing (..)
-import Types exposing (..)
 
+import Types exposing (..)
+import Utils exposing (..)
 
 signUpView : Model -> Html Msg
 signUpView model =
   div []
     [ h1 [] [ text "Sing Up"]
-    , Html.form []
+    , Html.form 
+      [ onClickSend SubmitSignUpForm ]
       [ div []
         [ label [ for "name" ]
             [ text "Name" ]

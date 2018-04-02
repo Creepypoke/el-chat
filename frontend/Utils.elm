@@ -14,3 +14,13 @@ onClickNewUrl url =
     , preventDefault = True
     }
     (Json.succeed (NewUrl url))
+
+
+onClickSend : Msg -> Attribute Msg
+onClickSend msg =
+  onWithOptions 
+    "submit"
+    { stopPropagation = True
+    , preventDefault = True
+    }
+    (Json.succeed msg)
