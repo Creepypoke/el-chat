@@ -46,3 +46,18 @@ function startApp () {
     console.log("El-Chat app listening on http://localhost:" + port)
   })
 }
+
+
+const msg = {
+  roomId: "room id",
+  message: {
+    from: { name: "name"},
+    text: "text",
+    kind: "message/join/leave"
+  },
+  messages: [{
+    from: { name: "name"},
+    text: "text",
+    kind: "message/join/leave"
+  }]
+}

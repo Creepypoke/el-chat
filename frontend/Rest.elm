@@ -42,6 +42,7 @@ userDecoder : Decoder User
 userDecoder =
   decode User
     |> required "name" string
+    |> required "id" string
 
 
 decodeJwtString : Maybe String -> Maybe JwtToken
@@ -58,6 +59,7 @@ jwtDecoder : Decoder JwtToken
 jwtDecoder =
   decode JwtToken
     |> required "name" string
+    |> required "id" string
     |> required "iat" int
 
 

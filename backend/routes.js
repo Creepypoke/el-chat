@@ -65,7 +65,7 @@ module.exports = (app, db) => {
       usersCollection.insertOne(newUser, (err, result) => {
         if (err) return next(err)
 
-        const token = jwt.sign({ name: newUser.name }, app.config.salt)
+        const token = jwt.sign({ name: newUser.name, id: result.insertedId }, app.config.salt)
         res.status(201).json({ jwt: token })
       })
     })
@@ -92,7 +92,7 @@ module.exports = (app, db) => {
         return res.status(400).json(errors)
       }
 
-      const token = jwt.sign({ name: name }, app.config.salt)
+      const token = jwt.sign({ name: name, id: user._id }, app.config.salt)
       res.status(201).json({ jwt: token })
 
     })

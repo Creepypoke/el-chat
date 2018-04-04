@@ -11,8 +11,7 @@ import Routing exposing (extractRoute)
 
 initialModel : Location -> Maybe String -> Model
 initialModel location jwtString =
-  { user = { name = "" }
-  , rooms = RemoteData.Loading
+  { rooms = RemoteData.Loading
   , currentRoute = extractRoute location
   , authForm = emptyAuthForm
   , jwt = decodeJwtString jwtString
@@ -90,6 +89,18 @@ update msg model =
             ( { model | jwt = jwt }
             , Cmd.batch [ newUrl "/", setJwt jwtString ]
             )
+    NewMessage message ->
+      ( model, Cmd.none )
+    -- _ ->
+    --   ( model, Cmd.none )
+
+
+parseMessage : String -> Cmd Msg
+parseMessage message =
+-- decode string to WsMessage
+-- update model
+  Cmd.none
+
 
 
 updateAuthFormName : AuthForm-> String -> AuthForm

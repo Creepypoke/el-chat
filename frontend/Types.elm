@@ -6,8 +6,7 @@ import Navigation exposing (Location)
 
 
 type alias Model =
-  { user : User
-  , rooms : WebData (List Room)
+  { rooms : WebData (List Room)
   , currentRoute : Route
   , authForm : AuthForm
   , jwt : Maybe JwtToken
@@ -34,16 +33,27 @@ type alias Message =
   { id : String
   , from : User
   , text : String
+  , kind : String
   }
 
 
 type alias User =
-  { name : String }
+  { name : String 
+  , id : String
+  }
 
 
 type alias JwtToken =
   { name : String
-  , iat: Int
+  , id : String
+  , iat : Int
+  }
+
+
+type alias WsMessage =
+  { roomId : String
+  , message : Maybe Message
+  , messages : Maybe (List Message)
   }
 
 
@@ -54,14 +64,12 @@ type Msg
   | RoomsResponse (WebData (List Room))
   | JoinRoom Room
   | UpdateAuthForm Field String
-  -- | UpdateName String
-  -- | UpdatePassword String
-  -- | UpdatePasswordConfirm String
   | SubmitSignInForm
   | SubmitSignUpForm
   | SignedIn (Result Http.Error String)
   | SignOut
   | SaveToken
+  | NewMessage String
 
 
 type Field

@@ -1,5 +1,12 @@
 Что дальше
 
 WebSocket соединение
+> User visit Room's page
+> Connect to the ws server 
+> Receive list of recent messages
+
 Вход в комнату с вводом имени
+Добавить разметку
+Добавить css (less)
+Показывать в navigation активную страницу
 ...
