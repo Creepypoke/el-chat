@@ -3,34 +3,35 @@ module State exposing (init, update)
 import RemoteData
 import Navigation exposing (Location, newUrl)
 
+import Ports exposing (..)
 import Types exposing (..)
-import Rest exposing (getRooms, signIn, signUp)
+import Rest exposing (getRooms, signIn, signUp, decodeJwtString)
 import Routing exposing (extractRoute)
 
 
-initialModel : Location -> Model
-initialModel location =
+initialModel : Location -> Maybe String -> Model
+initialModel location jwtString =
   { user = { name = "" }
   , rooms = RemoteData.Loading
   , currentRoute = extractRoute location
-  , auth = emptyAuth
-  , jwt = Nothing
+  , authForm = emptyAuthForm
+  , jwt = decodeJwtString jwtString
+  , jwtString = jwtString
   , messages = []
   }
 
 
-emptyAuth : Auth
-emptyAuth =
+emptyAuthForm : AuthForm
+emptyAuthForm =
   { name = ""
   , password = ""
   , passwordConfirm = ""
-  , authenticated = False
   }
 
 
-init : Location -> (Model, Cmd Msg)
-init location =
-  ( initialModel location, getRooms )
+init : Maybe String -> Location -> (Model, Cmd Msg)
+init jwt location =
+  ( initialModel location jwt, getRooms )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -47,36 +48,47 @@ update msg model =
     NewUrl url ->
       ( model, newUrl url )
     UpdateName newName ->
-      ( { model | auth = updateAuthName model.auth newName }, Cmd.none )
+      ( { model | authForm = updateAuthFormName model.authForm newName }, Cmd.none )
     UpdatePassword newPassword ->
-      ( { model | auth = updateAuthPassword model.auth newPassword }, Cmd.none )
+      ( { model | authForm = updateAuthFormPassword model.authForm newPassword }, Cmd.none )
     UpdatePasswordConfirm newPasswordConfirm ->
-      ( { model | auth = updateAuthPasswordConfirm model.auth newPasswordConfirm }, Cmd.none )
+      ( { model | authForm = updateAuthFormPasswordConfirm model.authForm newPasswordConfirm }, Cmd.none )
     SubmitSignInForm ->
-      ( model, signIn model.auth )
+      ( model, signIn model.authForm )
     SubmitSignUpForm ->
-      ( model, signUp model.auth )
-    SignedIn res ->
-      case res of
-        Result.Ok jwt ->
-          { model | jwt = Just jwt } |> update (NewUrl "/")
+      ( model, signUp model.authForm )
+    SignedIn jwtString ->
+      case jwtString of
+        Result.Ok jwtString ->
+          { model | jwtString = Just jwtString } |> update (SaveToken)
         Result.Err err ->
-          let 
+          let
             newMessages = toString(err) :: model.messages
           in
             ( { model | messages = newMessages }, Cmd.none )
+    SaveToken ->
+      case model.jwtString of
+        Nothing ->
+          update (NewUrl "/") model
+        Just jwtString ->
+          let
+            jwt = decodeJwtString model.jwtString
+          in
+            ( { model | jwt = jwt }
+            , Cmd.batch [ newUrl "/", setJwt jwtString ]
+            )
 
 
-updateAuthName : Auth -> String -> Auth
-updateAuthName auth newName =
-  { auth | name = newName }
+updateAuthFormName : AuthForm-> String -> AuthForm
+updateAuthFormName authForm newName =
+  { authForm | name = newName }
 
 
-updateAuthPassword : Auth -> String -> Auth
-updateAuthPassword auth password =
-  { auth | password = password }
+updateAuthFormPassword : AuthForm -> String -> AuthForm
+updateAuthFormPassword authForm password =
+  { authForm | password = password }
 
 
-updateAuthPasswordConfirm : Auth -> String -> Auth
-updateAuthPasswordConfirm auth passwordConfirm =
-  { auth | passwordConfirm = passwordConfirm }
+updateAuthFormPasswordConfirm : AuthForm -> String -> AuthForm
+updateAuthFormPasswordConfirm authForm passwordConfirm =
+  { authForm | passwordConfirm = passwordConfirm }

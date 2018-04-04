@@ -1,7 +1,6 @@
 module Types exposing (..)
 
 import Http
-import Jwt exposing (..)
 import RemoteData exposing (WebData)
 import Navigation exposing (Location)
 
@@ -10,17 +9,17 @@ type alias Model =
   { user : User
   , rooms : WebData (List Room)
   , currentRoute : Route
-  , auth : Auth
+  , authForm : AuthForm
   , jwt : Maybe JwtToken
+  , jwtString : Maybe String
   , messages : List String
   }
 
 
-type alias Auth =
+type alias AuthForm =
   { name : String
   , password : String
   , passwordConfirm : String
-  , authenticated : Bool
   }
 
 
@@ -43,7 +42,9 @@ type alias User =
 
 
 type alias JwtToken =
-  { name : String }
+  { name : String
+  , iat: Int
+  }
 
 
 type Msg
@@ -57,7 +58,8 @@ type Msg
   | UpdatePasswordConfirm String
   | SubmitSignInForm
   | SubmitSignUpForm
-  | SignedIn (Result JwtError JwtToken)
+  | SignedIn (Result Http.Error String)
+  | SaveToken
 
 
 type Route

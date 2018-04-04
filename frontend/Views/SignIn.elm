@@ -11,7 +11,7 @@ signInView : Model -> Html Msg
 signInView model =
   div []
     [ h1 [] [ text "Sing In"]
-    , Html.form 
+    , Html.form
       [ onClickSend SubmitSignInForm ]
       [ div []
         [ label [ for "name" ]
@@ -20,7 +20,7 @@ signInView model =
         , input
             [ id "name"
             , type_ "text"
-            , value model.auth.name
+            , value model.authForm.name
             , onInput UpdateName
             ]
             []

@@ -1,4 +1,4 @@
-module Rest exposing (getRooms, signIn, signUp)
+module Rest exposing (getRooms, signIn, signUp, decodeJwtString)
 
 import Jwt
 import Http
@@ -18,16 +18,16 @@ getRooms =
     |> Cmd.map RoomsResponse
 
 
-signUp : Auth -> Cmd Msg
-signUp auth = 
-  createSignUpRequest auth
-    |> Jwt.send SignedIn
+signUp : AuthForm -> Cmd Msg
+signUp authForm =
+  createSignUpRequest authForm
+    |> Http.send SignedIn
 
 
-signIn : Auth -> Cmd Msg
-signIn auth =
-  createSignInRequest auth
-    |> Jwt.send SignedIn
+signIn : AuthForm -> Cmd Msg
+signIn authForm =
+  createSignInRequest authForm
+    |> Http.send SignedIn
 
 
 roomDecoder : Decoder Room
@@ -44,10 +44,21 @@ userDecoder =
     |> required "name" string
 
 
+decodeJwtString : Maybe String -> Maybe JwtToken
+decodeJwtString jwtString =
+  case jwtString of
+    Nothing ->
+      Nothing
+    Just jwtString ->
+      Result.toMaybe
+        (Jwt.decodeToken jwtDecoder jwtString)
+
+
 jwtDecoder : Decoder JwtToken
 jwtDecoder =
   decode JwtToken
     |> required "name" string
+    |> required "iat" int
 
 
 jwtResponseDecoder : Decoder JwtToken
@@ -58,10 +69,10 @@ jwtResponseDecoder =
 tokenStringDecoder : Decoder String
 tokenStringDecoder =
   field "jwt" string
-  
 
-signUpEncoder : Auth -> Encode.Value
-signUpEncoder auth = 
+
+signUpEncoder : AuthForm -> Encode.Value
+signUpEncoder auth =
   Encode.object
     [ ( "name", Encode.string auth.name )
     , ( "password", Encode.string auth.password )
@@ -69,19 +80,19 @@ signUpEncoder auth =
     ]
 
 
-signInEncoder : Auth -> Encode.Value
-signInEncoder auth =
-  Encode.object 
-    [ ( "name", Encode.string auth.name )
-    , ( "password", Encode.string auth.password )
+signInEncoder : AuthForm -> Encode.Value
+signInEncoder authForm =
+  Encode.object
+    [ ( "name", Encode.string authForm.name )
+    , ( "password", Encode.string authForm.password )
     ]
 
 
-createSignUpRequest : Auth -> Http.Request JwtToken
-createSignUpRequest auth = 
-  Http.post "/sign-up" (Http.jsonBody (signUpEncoder auth)) jwtResponseDecoder
+createSignUpRequest : AuthForm -> Http.Request String
+createSignUpRequest authForm =
+  Http.post "/sign-up" (Http.jsonBody (signUpEncoder authForm)) tokenStringDecoder
 
 
-createSignInRequest : Auth -> Http.Request JwtToken
-createSignInRequest auth =
-  Http.post "/sign-in" (Http.jsonBody (signInEncoder auth)) jwtResponseDecoder
+createSignInRequest : AuthForm -> Http.Request String
+createSignInRequest authForm =
+  Http.post "/sign-in" (Http.jsonBody (signInEncoder authForm)) tokenStringDecoder

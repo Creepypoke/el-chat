@@ -1,14 +1,15 @@
 module Main exposing (..)
 
-import State exposing (init, update)
-import View exposing (view)
 import Navigation
+
 import Types exposing (..)
+import Ports exposing (..)
+import View exposing (view)
+import State exposing (init, update)
 
-
-main : Program Never Model Msg
-main = 
-  Navigation.program LocationChanged
+main : Program (Maybe String) Model Msg
+main =
+  Navigation.programWithFlags LocationChanged
     { init = init
     , view = view
     , update = update

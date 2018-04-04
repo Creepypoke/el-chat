@@ -11,7 +11,7 @@ signUpView : Model -> Html Msg
 signUpView model =
   div []
     [ h1 [] [ text "Sing Up"]
-    , Html.form 
+    , Html.form
       [ onClickSend SubmitSignUpForm ]
       [ div []
         [ label [ for "name" ]
@@ -20,7 +20,7 @@ signUpView model =
         , input
             [ id "name"
             , type_ "text"
-            , value model.auth.name
+            , value model.authForm.name
             , onInput UpdateName
             ]
             []
