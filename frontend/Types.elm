@@ -53,14 +53,21 @@ type Msg
   | RequestRooms
   | RoomsResponse (WebData (List Room))
   | JoinRoom Room
-  | UpdateName String
-  | UpdatePassword String
-  | UpdatePasswordConfirm String
+  | UpdateAuthForm Field String
+  -- | UpdateName String
+  -- | UpdatePassword String
+  -- | UpdatePasswordConfirm String
   | SubmitSignInForm
   | SubmitSignUpForm
   | SignedIn (Result Http.Error String)
   | SignOut
   | SaveToken
+
+
+type Field
+  = Name
+  | Password
+  | PasswordConfirm
 
 
 type Route

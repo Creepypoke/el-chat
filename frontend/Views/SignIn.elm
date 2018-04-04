@@ -21,7 +21,7 @@ signInView model =
             [ id "name"
             , type_ "text"
             , value model.authForm.name
-            , onInput UpdateName
+            , onInput (UpdateAuthForm Name)
             ]
             []
         ]
@@ -32,7 +32,7 @@ signInView model =
         , input
             [ id "password"
             , type_ "password"
-            , onInput UpdatePassword
+            , onInput (UpdateAuthForm Password)
             ]
             []
         ]

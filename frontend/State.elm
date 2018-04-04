@@ -47,12 +47,14 @@ update msg model =
       ( model, Cmd.none )
     NewUrl url ->
       ( model, newUrl url )
-    UpdateName newName ->
-      ( { model | authForm = updateAuthFormName model.authForm newName }, Cmd.none )
-    UpdatePassword newPassword ->
-      ( { model | authForm = updateAuthFormPassword model.authForm newPassword }, Cmd.none )
-    UpdatePasswordConfirm newPasswordConfirm ->
-      ( { model | authForm = updateAuthFormPasswordConfirm model.authForm newPasswordConfirm }, Cmd.none )
+    UpdateAuthForm field value ->
+      case field of
+        Name -> 
+          ( { model | authForm = updateAuthFormName model.authForm value }, Cmd.none )
+        Password ->
+          ( { model | authForm = updateAuthFormPassword model.authForm value }, Cmd.none )
+        PasswordConfirm ->
+          ( { model | authForm = updateAuthFormPasswordConfirm model.authForm value }, Cmd.none )
     SubmitSignInForm ->
       ( model, signIn model.authForm )
     SubmitSignUpForm ->

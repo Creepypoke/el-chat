@@ -21,7 +21,7 @@ signUpView model =
             [ id "name"
             , type_ "text"
             , value model.authForm.name
-            , onInput UpdateName
+            , onInput (UpdateAuthForm Name)
             ]
             []
         ]
@@ -32,7 +32,7 @@ signUpView model =
         , input
             [ id "password"
             , type_ "password"
-            , onInput UpdatePassword
+            , onInput (UpdateAuthForm Password)
             ]
             []
         ]
@@ -43,7 +43,7 @@ signUpView model =
           , input
               [ id "password-confirm"
               , type_ "password"
-              , onInput UpdatePasswordConfirm
+              , onInput (UpdateAuthForm PasswordConfirm)
               ]
               []
           ]

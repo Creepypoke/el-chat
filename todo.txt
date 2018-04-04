@@ -2,12 +2,4 @@
 
 WebSocket соединение
 Вход в комнату с вводом имени
-Переделать сообщения редактирования полей формы через общее событие для формы с двумя дата полями
-  FormInput inputId val ->
-    case inputId of
-      Uname ->
-        { model | uname = val } ! []
-
-      Pword ->
-        { model | pword = val } ! []
 ...
