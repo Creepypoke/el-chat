@@ -1,9 +1,11 @@
 module Views.Navigation exposing (navigationView)
 
 import Html exposing (..)
+import Html.Attributes exposing (href)
 
 import Types exposing (..)
 import Views.Helpers exposing (..)
+import Utils exposing (..)
 
 
 navigationView : Model -> Html Msg
@@ -19,7 +21,9 @@ navigationView model =
           ]
         Just jwt ->
           [ li []
-            [ link "/sign-out" (text "Sign Out") [] ]
+            [ a [ onEventSend "click" SignOut, href "/sign-out" ] 
+              [ text "Sign out"] 
+            ]
           ]
     commonLinks =
       [ li []

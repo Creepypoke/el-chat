@@ -16,6 +16,10 @@
 				localStorage.setItem('jwt', newJwt)
 			});
 
+			app.ports.removeJwt.subscribe( function() {
+				localStorage.removeItem('jwt')
+			})
+
 			app.ports.getJwt
 		</script>
 	</body>

@@ -59,6 +59,7 @@ type Msg
   | SubmitSignInForm
   | SubmitSignUpForm
   | SignedIn (Result Http.Error String)
+  | SignOut
   | SaveToken
 
 

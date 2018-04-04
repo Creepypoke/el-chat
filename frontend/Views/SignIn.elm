@@ -12,7 +12,7 @@ signInView model =
   div []
     [ h1 [] [ text "Sing In"]
     , Html.form
-      [ onClickSend SubmitSignInForm ]
+      [ onEventSend "submit" SubmitSignInForm ]
       [ div []
         [ label [ for "name" ]
             [ text "Name" ]

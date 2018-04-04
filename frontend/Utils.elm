@@ -16,10 +16,10 @@ onClickNewUrl url =
     (Json.succeed (NewUrl url))
 
 
-onClickSend : Msg -> Attribute Msg
-onClickSend msg =
+onEventSend : String -> Msg -> Attribute Msg
+onEventSend event msg =
   onWithOptions 
-    "submit"
+    event
     { stopPropagation = True
     , preventDefault = True
     }

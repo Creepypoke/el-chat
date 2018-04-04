@@ -12,7 +12,7 @@ signUpView model =
   div []
     [ h1 [] [ text "Sing Up"]
     , Html.form
-      [ onClickSend SubmitSignUpForm ]
+      [ onEventSend "submit" SubmitSignUpForm ]
       [ div []
         [ label [ for "name" ]
             [ text "Name" ]

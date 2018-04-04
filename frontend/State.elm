@@ -39,7 +39,7 @@ update msg model =
   case msg of
     RoomsResponse rooms ->
       ( { model | rooms = rooms }, Cmd.none )
-    LocationChanged location ->
+    LocationChanged location -> 
       ( { model | currentRoute = extractRoute location }, Cmd.none )
     RequestRooms ->
       ( model, getRooms )
@@ -66,6 +66,17 @@ update msg model =
             newMessages = toString(err) :: model.messages
           in
             ( { model | messages = newMessages }, Cmd.none )
+    SignOut ->
+      let 
+        newModel = 
+          { model
+          | jwt = Nothing
+          , jwtString = Nothing
+          }
+      in
+        ( newModel
+        , Cmd.batch [ newUrl "/", removeJwt () ]
+        )
     SaveToken ->
       case model.jwtString of
         Nothing ->
