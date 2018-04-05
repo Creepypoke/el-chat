@@ -7,4 +7,4 @@ import Types exposing (..)
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  WebSocket.listen "ws://echo.websocket.org" NewMessage
+  WebSocket.listen "ws://localhost:3000" NewMessage

@@ -1,14 +1,14 @@
 const path = require("path")
+const http = require("http")
 const express = require("express")
-const expressWs = require("express-ws")
 const bodyParser = require("body-parser")
 const MongoClient = require("mongodb").MongoClient
 
 const config = require("./config")
 const routes = require("./routes")
+const ws = require("./ws")
 
 const app = express()
-const appWs = expressWs(app)
 
 app.use(express.static(path.join(process.cwd(), "dist")))
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -26,23 +26,25 @@ MongoClient.connect(config.db.url, dbAuthOptions, (err, client) => {
   if (err) throw err
 
   const db = client.db(config.db.name)
+  const server = http.createServer(app)
 
   routes(app, db)
+  ws(app, server, db)
 
   app.use(function (err, req, res, next) {
     console.error(err.stack)
     res.status(500).send('Something broke!')
   })
 
-  startApp()
+  startApp(server)
 })
 
 
 
-function startApp () {
+function startApp (server) {
   const port = config.port
 
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log("El-Chat app listening on http://localhost:" + port)
   })
 }
