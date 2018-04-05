@@ -1,12 +1,14 @@
 module State exposing (init, update)
 
+import Debug
 import RemoteData
 import Navigation exposing (Location, newUrl)
 
 import Ports exposing (..)
 import Types exposing (..)
-import Rest exposing (getRooms, signIn, signUp, decodeJwtString)
 import Routing exposing (extractRoute)
+import Decoders exposing (decodeJwtString)
+import Rest exposing (getRooms, signIn, signUp)
 
 
 initialModel : Location -> Maybe String -> Model
@@ -38,7 +40,7 @@ update msg model =
   case msg of
     RoomsResponse rooms ->
       ( { model | rooms = rooms }, Cmd.none )
-    LocationChanged location -> 
+    LocationChanged location ->
       ( { model | currentRoute = extractRoute location }, Cmd.none )
     RequestRooms ->
       ( model, getRooms )
@@ -48,7 +50,7 @@ update msg model =
       ( model, newUrl url )
     UpdateAuthForm field value ->
       case field of
-        Name -> 
+        Name ->
           ( { model | authForm = updateAuthFormName model.authForm value }, Cmd.none )
         Password ->
           ( { model | authForm = updateAuthFormPassword model.authForm value }, Cmd.none )
@@ -68,8 +70,8 @@ update msg model =
           in
             ( { model | messages = newMessages }, Cmd.none )
     SignOut ->
-      let 
-        newModel = 
+      let
+        newModel =
           { model
           | jwt = Nothing
           , jwtString = Nothing
@@ -93,14 +95,6 @@ update msg model =
       ( model, Cmd.none )
     -- _ ->
     --   ( model, Cmd.none )
-
-
-parseMessage : String -> Cmd Msg
-parseMessage message =
--- decode string to WsMessage
--- update model
-  Cmd.none
-
 
 
 updateAuthFormName : AuthForm-> String -> AuthForm
