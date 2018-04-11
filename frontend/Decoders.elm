@@ -61,7 +61,24 @@ wsMessageDecoder =
 messageDecoder : Decoder Message
 messageDecoder =
   decode Message
-    |> required "id" string 
+    |> required "id" string
     |> required "from" userDecoder
     |> required "text" string
     |> required "kind" string
+
+
+errorMessageDecoder : Decoder ErrorMessage
+errorMessageDecoder =
+  decode ErrorMessage
+    |> required "field" string
+    |> required "message" string
+
+
+errorMessagesDecoder : Decoder (List ErrorMessage)
+errorMessagesDecoder =
+  list errorMessageDecoder
+
+
+decodeErrorMessages : String -> Result String (List ErrorMessage)
+decodeErrorMessages errorMessagesString =
+  decodeString errorMessagesDecoder errorMessagesString

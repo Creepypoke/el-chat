@@ -6,6 +6,8 @@ import Html.Attributes exposing (..)
 
 import Types exposing (..)
 import Utils exposing (..)
+import Views.Helpers exposing (errors)
+
 
 signUpView : Model -> Html Msg
 signUpView model =
@@ -51,5 +53,6 @@ signUpView model =
         [ button []
             [ text "Sing Up"]
         ]
+      , errors model.authForm.errors
       ]
     ]

@@ -20,11 +20,14 @@ type alias AuthForm =
   { name : String
   , password : String
   , passwordConfirm : String
+  , errors : List ErrorMessage
   }
 
 
 type alias NewRoomForm =
-  { name : String }
+  { name : String
+  , errors : List ErrorMessage
+  }
 
 type alias Room =
   { id : String
@@ -61,8 +64,10 @@ type alias WsMessage =
   }
 
 
-type alias ErrorResponse =
-  List (String, String)
+type alias ErrorMessage =
+  { field: String
+  , message : String
+  }
 
 
 type Msg

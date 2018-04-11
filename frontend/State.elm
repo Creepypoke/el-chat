@@ -1,5 +1,6 @@
 module State exposing (init, update)
 
+import Http
 import Debug
 import RemoteData
 import Navigation exposing (Location, newUrl)
@@ -7,7 +8,7 @@ import Navigation exposing (Location, newUrl)
 import Ports exposing (..)
 import Types exposing (..)
 import Routing exposing (extractRoute)
-import Decoders exposing (decodeJwtString)
+import Decoders exposing (decodeJwtString, decodeErrorMessages)
 import Rest exposing (getRooms, signIn, signUp, createRoom)
 
 
@@ -28,12 +29,15 @@ emptyAuthForm =
   { name = ""
   , password = ""
   , passwordConfirm = ""
+  , errors = []
   }
 
 
 emptyNewRoomForm : NewRoomForm
 emptyNewRoomForm =
-  { name = "" }
+  { name = ""
+  , errors = []
+  }
 
 
 init : Maybe String -> Location -> (Model, Cmd Msg)
@@ -80,9 +84,10 @@ update msg model =
           { model | jwtString = Just jwtString } |> update (SaveToken)
         Result.Err err ->
           let
-            newMessages = toString(err) :: model.messages
+            errors = parseErr err
           in
-            ( { model | messages = newMessages }, Cmd.none )
+            ( { model | authForm = updateAuthFormErrors model.authForm errors }, Cmd.none )
+
     RoomCreated room ->
       case room of
         Result.Ok room ->
@@ -136,6 +141,36 @@ updateAuthFormPasswordConfirm authForm passwordConfirm =
   { authForm | passwordConfirm = passwordConfirm }
 
 
+updateAuthFormErrors : AuthForm -> List ErrorMessage -> AuthForm
+updateAuthFormErrors authForm errors =
+  { authForm | errors = errors }
+
+
 updateNewRoomFormName : NewRoomForm -> String -> NewRoomForm
 updateNewRoomFormName newRoomForm newName =
   { newRoomForm | name = newName }
+
+
+parseErr : Http.Error -> List ErrorMessage
+parseErr err =
+  case err of
+    Http.BadStatus response ->
+      parseBadStatus response
+    _ ->
+      [
+        { field = "General"
+        , message = "Somethinh went wrong"
+        }
+      ]
+
+parseBadStatus : Http.Response String -> List ErrorMessage
+parseBadStatus response =
+  case (decodeErrorMessages response.body) of
+    Ok errors ->
+      errors
+    Err a->
+      [
+        { field = "General"
+        , message = "Somethinh went wrong"
+        }
+      ]
