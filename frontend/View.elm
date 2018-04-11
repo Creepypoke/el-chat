@@ -17,7 +17,7 @@ view model =
     [ navigationView model
     , case model.currentRoute of
         HomeRoute ->
-          roomsView model.rooms
+          roomsView model
         SignUpRoute ->
           signUpView model
         SignInRoute ->

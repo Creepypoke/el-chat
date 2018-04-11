@@ -28,7 +28,7 @@ module.exports = (app, db) => {
     roomsCollection.insertOne(newRoom, (err, result) => {
       if (err) return next(err)
 
-      res.status(201).json({ id: result.insertedId})
+      res.status(201).json({ id: result.insertedId, name: req.body.name, users: [] })
     })
   })
 
@@ -73,7 +73,7 @@ module.exports = (app, db) => {
 
   app.post("/sign-in", (req, res, next) => {
     const errors = []
-    
+
     const name = req.body.name
     const password = req.body.password
 

@@ -9,6 +9,7 @@ type alias Model =
   { rooms : WebData (List Room)
   , currentRoute : Route
   , authForm : AuthForm
+  , newRoomForm : NewRoomForm
   , jwt : Maybe JwtToken
   , jwtString : Maybe String
   , messages : List String
@@ -21,6 +22,9 @@ type alias AuthForm =
   , passwordConfirm : String
   }
 
+
+type alias NewRoomForm =
+  { name : String }
 
 type alias Room =
   { id : String
@@ -38,7 +42,7 @@ type alias Message =
 
 
 type alias User =
-  { name : String 
+  { name : String
   , id : String
   }
 
@@ -57,6 +61,10 @@ type alias WsMessage =
   }
 
 
+type alias ErrorResponse =
+  List (String, String)
+
+
 type Msg
   = LocationChanged Location
   | NewUrl String
@@ -64,9 +72,12 @@ type Msg
   | RoomsResponse (WebData (List Room))
   | JoinRoom Room
   | UpdateAuthForm Field String
+  | UpdateNewRoomForm Field String
   | SubmitSignInForm
   | SubmitSignUpForm
+  | SubmitNewRoomForm
   | SignedIn (Result Http.Error String)
+  | RoomCreated (Result Http.Error Room)
   | SignOut
   | SaveToken
   | NewMessage String

@@ -8,7 +8,7 @@ import Ports exposing (..)
 import Types exposing (..)
 import Routing exposing (extractRoute)
 import Decoders exposing (decodeJwtString)
-import Rest exposing (getRooms, signIn, signUp)
+import Rest exposing (getRooms, signIn, signUp, createRoom)
 
 
 initialModel : Location -> Maybe String -> Model
@@ -16,6 +16,7 @@ initialModel location jwtString =
   { rooms = RemoteData.Loading
   , currentRoute = extractRoute location
   , authForm = emptyAuthForm
+  , newRoomForm = emptyNewRoomForm
   , jwt = decodeJwtString jwtString
   , jwtString = jwtString
   , messages = []
@@ -28,6 +29,11 @@ emptyAuthForm =
   , password = ""
   , passwordConfirm = ""
   }
+
+
+emptyNewRoomForm : NewRoomForm
+emptyNewRoomForm =
+  { name = "" }
 
 
 init : Maybe String -> Location -> (Model, Cmd Msg)
@@ -56,14 +62,32 @@ update msg model =
           ( { model | authForm = updateAuthFormPassword model.authForm value }, Cmd.none )
         PasswordConfirm ->
           ( { model | authForm = updateAuthFormPasswordConfirm model.authForm value }, Cmd.none )
+    UpdateNewRoomForm field value ->
+      case field of
+        Name ->
+          ( { model | newRoomForm = updateNewRoomFormName model.newRoomForm value }, Cmd.none )
+        _ ->
+          ( model, Cmd.none )
     SubmitSignInForm ->
       ( model, signIn model.authForm )
     SubmitSignUpForm ->
       ( model, signUp model.authForm )
+    SubmitNewRoomForm ->
+      ( model, createRoom model.newRoomForm )
     SignedIn jwtString ->
       case jwtString of
         Result.Ok jwtString ->
           { model | jwtString = Just jwtString } |> update (SaveToken)
+        Result.Err err ->
+          let
+            newMessages = toString(err) :: model.messages
+          in
+            ( { model | messages = newMessages }, Cmd.none )
+    RoomCreated room ->
+      case room of
+        Result.Ok room ->
+          { model | newRoomForm = emptyNewRoomForm }
+            |> update RequestRooms
         Result.Err err ->
           let
             newMessages = toString(err) :: model.messages
@@ -110,3 +134,8 @@ updateAuthFormPassword authForm password =
 updateAuthFormPasswordConfirm : AuthForm -> String -> AuthForm
 updateAuthFormPasswordConfirm authForm passwordConfirm =
   { authForm | passwordConfirm = passwordConfirm }
+
+
+updateNewRoomFormName : NewRoomForm -> String -> NewRoomForm
+updateNewRoomFormName newRoomForm newName =
+  { newRoomForm | name = newName }

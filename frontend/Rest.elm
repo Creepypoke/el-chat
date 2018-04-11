@@ -1,7 +1,7 @@
-module Rest exposing (getRooms, signIn, signUp)
+module Rest exposing (getRooms, signIn, signUp, createRoom)
 
 import Http
-import Json.Decode exposing (list)
+import Json.Decode exposing (list, string)
 import Json.Encode as Encode
 import RemoteData
 
@@ -29,6 +29,12 @@ signIn authForm =
     |> Http.send SignedIn
 
 
+createRoom : NewRoomForm -> Cmd Msg
+createRoom newRoomForm =
+  createNewRoomRequest newRoomForm
+    |> Http.send RoomCreated
+
+
 signUpEncoder : AuthForm -> Encode.Value
 signUpEncoder auth =
   Encode.object
@@ -46,6 +52,12 @@ signInEncoder authForm =
     ]
 
 
+newRoomEncoder : NewRoomForm -> Encode.Value
+newRoomEncoder newRoomForm =
+  Encode.object
+    [ ( "name", Encode.string newRoomForm.name ) ]
+
+
 createSignUpRequest : AuthForm -> Http.Request String
 createSignUpRequest authForm =
   Http.post "/sign-up" (Http.jsonBody (signUpEncoder authForm)) tokenStringDecoder
@@ -54,3 +66,8 @@ createSignUpRequest authForm =
 createSignInRequest : AuthForm -> Http.Request String
 createSignInRequest authForm =
   Http.post "/sign-in" (Http.jsonBody (signInEncoder authForm)) tokenStringDecoder
+
+
+createNewRoomRequest : NewRoomForm -> Http.Request Room
+createNewRoomRequest newRoomForm =
+  Http.post "/api/rooms" (Http.jsonBody (newRoomEncoder newRoomForm)) roomDecoder

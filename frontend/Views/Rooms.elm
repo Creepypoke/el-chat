@@ -1,19 +1,21 @@
 module Views.Rooms exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (href)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onInput)
 import RemoteData exposing (WebData)
 
 import Types exposing (..)
-import Views.Helpers exposing (..)
-import Utils exposing (onClickNewUrl)
+import Utils exposing (..)
 
-roomsView : WebData(List Room) -> Html Msg
-roomsView rooms =
+
+roomsView : Model -> Html Msg
+roomsView model =
   div []
     [ h2 []
       [ text "Rooms" ]
-    ,  viewRoomsOrError rooms
+    , viewRoomsOrError model.rooms
+    , newRoomForm model
     ]
 
 
@@ -32,8 +34,38 @@ viewRoomsOrError roomsWebData =
 
 viewRooms : List Room -> Html Msg
 viewRooms rooms =
+  if (List.length rooms) > 0 then
+    div []
+      (List.map roomView rooms)
+  else
+    div []
+      [ text "There is no rooms, yet" ]
+
+
+newRoomForm : Model -> Html Msg
+newRoomForm model =
   div []
-    (List.map roomView rooms)
+    [ h3 [] [ text "Add room"]
+    , Html.form
+      [ onEventSend "submit" SubmitNewRoomForm ]
+      [ div []
+        [ label [ for "name" ]
+            [ text "Name" ]
+        , br [] []
+        , input
+            [ id "name"
+            , type_ "text"
+            , value model.newRoomForm.name
+            , onInput (UpdateNewRoomForm Name)
+            ]
+            []
+        ]
+      , div []
+        [ button []
+            [ text "Add"]
+        ]
+      ]
+    ]
 
 
 roomView : Room -> Html Msg

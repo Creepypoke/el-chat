@@ -22,7 +22,7 @@ const dbAuthOptions = {
   }
 }
 
-MongoClient.connect(config.db.url, dbAuthOptions, (err, client) => {
+MongoClient.connect(config.db.url, (err, client) => {
   if (err) throw err
 
   const db = client.db(config.db.name)

@@ -1,6 +1,6 @@
 module.exports = {
   db: {
-    url: "mongodb://ds227459.mlab.com:27459/el-chat",
+    url: "mongodb://localhost:27017/el-chat",
     user: "admin",
     password: "admin",
     name: "el-chat"
