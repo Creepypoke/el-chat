@@ -7,7 +7,7 @@ import RemoteData exposing (WebData)
 
 import Types exposing (..)
 import Utils exposing (..)
-
+import Views.Helpers exposing (errors)
 
 roomsView : Model -> Html Msg
 roomsView model =
@@ -64,6 +64,7 @@ newRoomForm model =
         [ button []
             [ text "Add"]
         ]
+      , errors model.newRoomForm.errors
       ]
     ]
 

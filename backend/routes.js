@@ -25,10 +25,19 @@ module.exports = (app, db) => {
 
     if (errors.length > 0) return res.status(400).json(errors)
 
-    roomsCollection.insertOne(newRoom, (err, result) => {
+    roomsCollection.findOne({ name: newRoom.name }, (err, room) => {
       if (err) return next(err)
 
-      res.status(201).json({ id: result.insertedId, name: req.body.name, users: [] })
+      if (room) {
+        errors.push({ field: "name", message: "Already taken" })
+        return res.status(400).json(errors)
+      }
+
+      roomsCollection.insertOne(newRoom, (err, result) => {
+        if (err) return next(err)
+
+        res.status(201).json({ id: result.insertedId, name: req.body.name, users: [] })
+      })
     })
   })
 

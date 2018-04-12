@@ -95,9 +95,9 @@ update msg model =
             |> update RequestRooms
         Result.Err err ->
           let
-            newMessages = toString(err) :: model.messages
+            errors = parseErr err
           in
-            ( { model | messages = newMessages }, Cmd.none )
+            ( { model | newRoomForm = updateNewRoomFormErrors model.newRoomForm errors }, Cmd.none )
     SignOut ->
       let
         newModel =
@@ -151,6 +151,11 @@ updateNewRoomFormName newRoomForm newName =
   { newRoomForm | name = newName }
 
 
+updateNewRoomFormErrors : NewRoomForm -> List ErrorMessage -> NewRoomForm
+updateNewRoomFormErrors newRoomForm errors =
+  { newRoomForm | errors = errors }
+
+
 parseErr : Http.Error -> List ErrorMessage
 parseErr err =
   case err of
@@ -162,6 +167,7 @@ parseErr err =
         , message = "Somethinh went wrong"
         }
       ]
+
 
 parseBadStatus : Http.Response String -> List ErrorMessage
 parseBadStatus response =
