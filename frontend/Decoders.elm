@@ -13,6 +13,7 @@ roomDecoder =
     |> required "id" string
     |> required "name" string
     |> required "users" (list userDecoder)
+    |> required "messages" (list messageDecoder)
 
 
 userDecoder : Decoder User
@@ -82,3 +83,8 @@ errorMessagesDecoder =
 decodeErrorMessages : String -> Result String (List ErrorMessage)
 decodeErrorMessages errorMessagesString =
   decodeString errorMessagesDecoder errorMessagesString
+
+
+decodeWsMessage : String -> Result String (WsMessage)
+decodeWsMessage wsMessageString =
+  decodeString wsMessageDecoder wsMessageString

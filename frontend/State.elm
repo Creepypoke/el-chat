@@ -2,13 +2,14 @@ module State exposing (init, update)
 
 import Http
 import Debug
-import RemoteData
+import RemoteData exposing (WebData)
 import Navigation exposing (Location, newUrl)
+
 
 import Ports exposing (..)
 import Types exposing (..)
 import Routing exposing (extractRoute)
-import Decoders exposing (decodeJwtString, decodeErrorMessages)
+import Decoders exposing (decodeJwtString, decodeErrorMessages, decodeWsMessage)
 import Rest exposing (getRooms, signIn, signUp, createRoom)
 
 
@@ -121,9 +122,7 @@ update msg model =
             , Cmd.batch [ newUrl "/", setJwt jwtString ]
             )
     NewMessage message ->
-      ( model, Cmd.none )
-    -- _ ->
-    --   ( model, Cmd.none )
+      ( processWsMessage model message, Cmd.none )
 
 
 updateAuthFormName : AuthForm-> String -> AuthForm
@@ -180,3 +179,76 @@ parseBadStatus response =
         , message = "Somethinh went wrong"
         }
       ]
+
+
+processWsMessage : Model -> String -> Model
+processWsMessage model wsMessageString =
+  case decodeWsMessage wsMessageString of
+    Result.Ok wsMessage ->
+      let
+        room = findRoom model.rooms wsMessage.roomId
+        roomMessages = getRoomMessages room
+        oneMessage = parseOneMessage wsMessage.message
+        listMessages = parseListMessages wsMessage.messages
+        messages = roomMessages ++ oneMessage ++ listMessages
+      in
+        case room of
+          Just room ->
+            { model | rooms = updateRoomMessages model.rooms room messages }
+          Nothing ->
+            model
+    Result.Err err ->
+      model
+
+
+findRoom : WebData (List Room) -> String -> Maybe Room
+findRoom roomsWebData roomId =
+  case roomsWebData of
+    RemoteData.Success rooms ->
+      List.filter (\n -> n.id == roomId) rooms
+        |> List.head
+    _ ->
+      Nothing
+
+
+getRoomMessages : Maybe Room -> List Message
+getRoomMessages room =
+  case room of
+    Just room ->
+      room.messages
+    Nothing ->
+      []
+
+
+parseOneMessage : Maybe Message -> List Message
+parseOneMessage message =
+  case message of
+    Just message ->
+      [message]
+    Nothing ->
+      []
+
+
+parseListMessages : Maybe (List Message) -> List Message
+parseListMessages messages =
+  case messages of
+    Just messages ->
+      messages
+    Nothing ->
+      []
+
+
+updateRoomMessages : WebData (List Room) -> Room -> List Message -> WebData (List Room)
+updateRoomMessages rooms room messages =
+  case rooms of
+    RemoteData.Success rooms ->
+      RemoteData.succeed (List.map
+        (\n ->
+          case n.id == room.id of
+            True ->
+              { n | messages = messages }
+            False ->
+              n
+        ) rooms)
+    _ ->
+      rooms

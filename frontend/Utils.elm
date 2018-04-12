@@ -18,9 +18,23 @@ onClickNewUrl url =
 
 onEventSend : String -> Msg -> Attribute Msg
 onEventSend event msg =
-  onWithOptions 
+  onWithOptions
     event
     { stopPropagation = True
     , preventDefault = True
     }
     (Json.succeed msg)
+
+
+-- Author @kana_sama
+updateAt : number -> (a -> a) -> List a -> List a
+updateAt n f list =
+    case ( n, list ) of
+        ( _, [] ) ->
+            []
+
+        ( 0, x :: xs ) ->
+            f x :: xs
+
+        ( n, x :: xs ) ->
+            x :: updateAt (n - 1) f xs

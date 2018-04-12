@@ -33,6 +33,7 @@ type alias Room =
   { id : String
   , name : String
   , users : List User
+  , messages : List Message
   }
 
 
