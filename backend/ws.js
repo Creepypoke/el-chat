@@ -5,12 +5,9 @@ module.exports = (app, server, db) => {
 
   wss.on("connection", (ws, req) => {
 
-    setTimeout(() => {
-      ws.send(JSON.stringify(wsMessage));
-    }, 3000)
-
     ws.on("message", (message) => {
       console.log("received: %s", message)
+      ws.send(JSON.stringify(wsMessage));
     })
 
     ws.on("close", () => {

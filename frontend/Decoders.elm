@@ -1,7 +1,7 @@
 module Decoders exposing (..)
 
 import Jwt
-import Json.Decode exposing (int, string, Decoder, list, field, decodeString, maybe)
+import Json.Decode exposing (int, string, Decoder, list, field, decodeString, maybe, succeed, fail, andThen)
 import Json.Decode.Pipeline exposing (decode, required, optional)
 
 import Types exposing (..)
@@ -65,7 +65,7 @@ messageDecoder =
     |> required "id" string
     |> required "from" userDecoder
     |> required "text" string
-    |> required "kind" string
+    |> required "kind" messageKind
 
 
 errorMessageDecoder : Decoder ErrorMessage
@@ -88,3 +88,21 @@ decodeErrorMessages errorMessagesString =
 decodeWsMessage : String -> Result String (WsMessage)
 decodeWsMessage wsMessageString =
   decodeString wsMessageDecoder wsMessageString
+
+
+messageKind : Decoder MessageKind
+messageKind =
+  let
+    convert : String -> Decoder MessageKind
+    convert raw =
+        case raw of
+          "text" ->
+            succeed Text
+          "join" ->
+            succeed Join
+          "leave" ->
+            succeed Leave
+          _ ->
+            fail <| "Unsupported message kind"
+  in
+      string |> andThen convert

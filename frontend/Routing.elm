@@ -6,7 +6,6 @@ import Navigation exposing (Location)
 import Types exposing (..)
 
 
-
 extractRoute : Location -> Route
 extractRoute location =
   case (parsePath matchRoute location) of

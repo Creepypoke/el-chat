@@ -41,7 +41,7 @@ type alias Message =
   { id : String
   , from : User
   , text : String
-  , kind : String
+  , kind : MessageKind
   }
 
 
@@ -65,6 +65,13 @@ type alias WsMessage =
   }
 
 
+type alias MessageToSend =
+  { roomId : String
+  , kind : MessageKind
+  , text : Maybe String
+  }
+
+
 type alias ErrorMessage =
   { field: String
   , message : String
@@ -77,6 +84,7 @@ type Msg
   | RequestRooms
   | RoomsResponse (WebData (List Room))
   | JoinRoom Room
+  | LeaveRoom Room (Maybe Msg)
   | UpdateAuthForm Field String
   | UpdateNewRoomForm Field String
   | SubmitSignInForm
@@ -101,3 +109,9 @@ type Route
   | SignInRoute
   | RoomRoute String
   | NotFoundRoute
+
+
+type MessageKind
+  = Text
+  | Join
+  | Leave

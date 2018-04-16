@@ -1,8 +1,10 @@
 module Utils exposing (..)
 
-import Html exposing (Attribute)
-import Html.Events exposing (onWithOptions)
 import Json.Decode as Json
+import Html exposing (Attribute)
+import RemoteData exposing (WebData)
+import Html.Events exposing (onWithOptions)
+
 import Types exposing (..)
 
 
@@ -38,3 +40,14 @@ updateAt n f list =
 
         ( n, x :: xs ) ->
             x :: updateAt (n - 1) f xs
+
+
+findRoomById : WebData (List Room) -> String -> Maybe Room
+findRoomById rooms roomId =
+  case RemoteData.toMaybe rooms of
+    Just rooms ->
+      rooms
+        |> List.filter (\room -> room.id == roomId)
+        |> List.head
+    Nothing ->
+      Nothing

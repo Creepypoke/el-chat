@@ -2,14 +2,18 @@ module State exposing (init, update)
 
 import Http
 import Debug
+import WebSocket
+import Json.Encode exposing (encode)
 import RemoteData exposing (WebData)
 import Navigation exposing (Location, newUrl)
 
-
 import Ports exposing (..)
 import Types exposing (..)
+import Utils exposing (..)
+import Settings exposing (..)
 import Routing exposing (extractRoute)
 import Decoders exposing (decodeJwtString, decodeErrorMessages, decodeWsMessage)
+import Encoders exposing (messageToSendEncoder)
 import Rest exposing (getRooms, signIn, signUp, createRoom)
 
 
@@ -52,11 +56,43 @@ update msg model =
     RoomsResponse rooms ->
       ( { model | rooms = rooms }, Cmd.none )
     LocationChanged location ->
-      ( { model | currentRoute = extractRoute location }, Cmd.none )
+      let
+        route = extractRoute location
+        msg = nextMsg route model
+        newModel = { model | currentRoute = route }
+      in
+        case msg of
+          Just msg ->
+            update msg newModel
+          Nothing ->
+            ( newModel, Cmd.none )
     RequestRooms ->
       ( model, getRooms )
     JoinRoom room ->
-      ( model, Cmd.none )
+      let
+        messageToSend =
+          { roomId = room.id
+          , kind = Join
+          , text = Nothing
+          }
+        messageToSendString = encode 0 (messageToSendEncoder messageToSend)
+      in
+        ( model, WebSocket.send wsUrl messageToSendString )
+    LeaveRoom room nextMsg ->
+      let
+        messageToSend =
+          { roomId = room.id
+          , kind = Leave
+          , text = Nothing
+          }
+        messageToSendString = encode 0 (messageToSendEncoder messageToSend)
+      in
+        case nextMsg of
+          Just nextMsg ->
+            andThen nextMsg
+              <| ( model, WebSocket.send wsUrl messageToSendString )
+          Nothing ->
+            ( model, WebSocket.send wsUrl messageToSendString )
     NewUrl url ->
       ( model, newUrl url )
     UpdateAuthForm field value ->
@@ -252,3 +288,47 @@ updateRoomMessages rooms room messages =
         ) rooms)
     _ ->
       rooms
+
+
+msgOnRoute : Route -> Model -> Maybe Msg
+msgOnRoute route model =
+  case route of
+    RoomRoute roomId ->
+      let
+        room = findRoomById model.rooms roomId
+      in
+        case room of
+          Just room ->
+            Just (JoinRoom room)
+          Nothing ->
+            Nothing
+    _ ->
+      Nothing
+
+
+nextMsg : Route -> Model -> Maybe Msg
+nextMsg nextRoute model =
+  let
+    msg = msgOnRoute nextRoute model
+  in
+    case model.currentRoute of
+      RoomRoute roomId ->
+        let
+          room = findRoomById model.rooms roomId
+        in
+          case room of
+            Nothing ->
+              msg
+            Just room ->
+              Just (LeaveRoom room msg)
+      _ ->
+        msg
+
+
+andThen : Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+andThen msg ( model, cmd ) =
+    let
+        ( newmodel, newCmd ) =
+            update msg model
+    in
+        newmodel ! [ cmd, newCmd ]
