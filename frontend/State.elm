@@ -23,6 +23,7 @@ initialModel location jwtString =
   , currentRoute = extractRoute location
   , authForm = emptyAuthForm
   , newRoomForm = emptyNewRoomForm
+  , newMessageForm = emptyNewMessageForm
   , jwt = decodeJwtString jwtString
   , jwtString = jwtString
   , messages = []
@@ -43,6 +44,11 @@ emptyNewRoomForm =
   { name = ""
   , errors = []
   }
+
+
+emptyNewMessageForm : NewMessageForm
+emptyNewMessageForm =
+  { text = "" }
 
 
 init : Maybe String -> Location -> (Model, Cmd Msg)
@@ -105,10 +111,18 @@ update msg model =
           ( { model | authForm = updateAuthFormPassword model.authForm value }, Cmd.none )
         PasswordConfirm ->
           ( { model | authForm = updateAuthFormPasswordConfirm model.authForm value }, Cmd.none )
+        _ ->
+          ( model, Cmd.none )
     UpdateNewRoomForm field value ->
       case field of
         Name ->
           ( { model | newRoomForm = updateNewRoomFormName model.newRoomForm value }, Cmd.none )
+        _ ->
+          ( model, Cmd.none )
+    UpdateNewMessageForm field value ->
+      case field of
+        MessageText ->
+          ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm value }, Cmd.none )
         _ ->
           ( model, Cmd.none )
     SubmitSignInForm ->
@@ -117,6 +131,17 @@ update msg model =
       ( model, signUp model.authForm )
     SubmitNewRoomForm ->
       ( model, createRoom model.newRoomForm )
+    SubmitNewMessageForm room ->
+      let
+        messageToSend =
+          { roomId = room.id
+          , kind = Text
+          , text = Just model.newMessageForm.text
+          , jwt = model.jwtString
+          }
+        messageToSendString = encode 0 (messageToSendEncoder messageToSend)
+      in
+        ( { model | newMessageForm = emptyNewMessageForm }, WebSocket.send wsUrl messageToSendString)
     SignedIn jwtString ->
       case jwtString of
         Result.Ok jwtString ->
@@ -191,6 +216,11 @@ updateNewRoomFormName newRoomForm newName =
 updateNewRoomFormErrors : NewRoomForm -> List ErrorMessage -> NewRoomForm
 updateNewRoomFormErrors newRoomForm errors =
   { newRoomForm | errors = errors }
+
+
+updateNewMessageFormText : NewMessageForm -> String -> NewMessageForm
+updateNewMessageFormText newMessageForm newText =
+  { newMessageForm | text = newText }
 
 
 parseErr : Http.Error -> List ErrorMessage

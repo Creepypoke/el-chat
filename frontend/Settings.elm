@@ -3,4 +3,4 @@ module Settings exposing (..)
 
 wsUrl : String
 wsUrl =
-  "ws://localhost:3000"
+  "ws://f356e597.ngrok.io"

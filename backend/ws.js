@@ -19,11 +19,14 @@ module.exports = (app, server, db) => {
 
   function processMessage (ws, message, user) {
     switch (message.kind) {
-      case 'join':
+      case consts.MESSAGE_TYPES.JOIN:
         joinRoom(user, message.roomId)
         break
-      case 'leave':
+      case consts.MESSAGE_TYPES.LEAVE:
         leaveRoom(user, message.roomId)
+        break
+      case consts.MESSAGE_TYPES.TEXT:
+        textMessage(user, message.roomId, message.text)
         break
       default:
         const errorMessage = createErrorMessage(message.roomId, "unsupported kind of message")
@@ -56,12 +59,28 @@ module.exports = (app, server, db) => {
     notifyRoom(app.rooms[roomId], leaveMessage)
   }
 
+  function textMessage(user, roomId, text) {
+    const message = createTextMessage(roomId, user, text)
+    notifyRoom(app.rooms[roomId], message)
+  }
+
   function notifyRoom(room, message) {
     Object.values(room.users).forEach((user) => {
       user.ws.send(JSON.stringify(message))
     })
   }
 
+  function createTextMessage (roomId, user, text) {
+    return {
+      roomId: roomId,
+      message: {
+        id: "123",
+        text: text,
+        kind: consts.MESSAGE_TYPES.TEXT,
+        from: cleanUser(user)
+      }
+    }
+  }
 
   function createErrorMessage (roomId, errorText) {
     return {
@@ -90,6 +109,13 @@ module.exports = (app, server, db) => {
         text: `${user.name} leaved room`,
         kind: consts.MESSAGE_TYPES.LEAVE
       }
+    }
+  }
+
+  function cleanUser (dirtyUser) {
+    return {
+      name: dirtyUser.name,
+      id: dirtyUser.id
     }
   }
 

@@ -10,6 +10,7 @@ type alias Model =
   , currentRoute : Route
   , authForm : AuthForm
   , newRoomForm : NewRoomForm
+  , newMessageForm: NewMessageForm
   , jwt : Maybe JwtToken
   , jwtString : Maybe String
   , messages : List String
@@ -28,6 +29,11 @@ type alias NewRoomForm =
   { name : String
   , errors : List ErrorMessage
   }
+
+
+type alias NewMessageForm =
+  { text : String }
+
 
 type alias Room =
   { id : String
@@ -88,9 +94,11 @@ type Msg
   | LeaveRoom Room (Maybe Msg)
   | UpdateAuthForm Field String
   | UpdateNewRoomForm Field String
+  | UpdateNewMessageForm Field String
   | SubmitSignInForm
   | SubmitSignUpForm
   | SubmitNewRoomForm
+  | SubmitNewMessageForm Room
   | SignedIn (Result Http.Error String)
   | RoomCreated (Result Http.Error Room)
   | SignOut
@@ -102,6 +110,7 @@ type Field
   = Name
   | Password
   | PasswordConfirm
+  | MessageText
 
 
 type Route

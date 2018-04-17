@@ -1,9 +1,13 @@
 module Views.Room exposing (roomView)
 
 import Html exposing (..)
+import Html.Events exposing (onInput)
+import Html.Attributes exposing (..)
+
+
 
 import Types exposing (..)
-
+import Utils exposing (..)
 
 roomView : Model -> Room -> Html Msg
 roomView model room =
@@ -12,6 +16,7 @@ roomView model room =
       [ text (room.name ++ " # " ++ room.id) ]
     , div []
         (List.map messageView room.messages)
+    , messageForm model room
     ]
 
 
@@ -34,6 +39,7 @@ messageView message =
       div []
         [ text (" " ++ message.text ) ]
 
+
 fromName : Maybe User -> String
 fromName user =
   case user of
@@ -41,3 +47,23 @@ fromName user =
       user.name
     Nothing ->
       ""
+
+
+messageForm : Model -> Room -> Html Msg
+messageForm model room =
+  div []
+    [ Html.form
+      [ onEventSend "submit" (SubmitNewMessageForm room)]
+      [ div []
+        [ input
+            [ id "message"
+            , type_ "text"
+            , value model.newMessageForm.text
+            , onInput (UpdateNewMessageForm MessageText)
+            ]
+            []
+        , button []
+            [ text "Send"]
+        ]
+      ]
+    ]
