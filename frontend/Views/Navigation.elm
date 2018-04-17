@@ -11,7 +11,7 @@ import Utils exposing (..)
 navigationView : Model -> Html Msg
 navigationView model =
   let
-    authLinks = 
+    authLinks =
       case model.jwt of
         Nothing ->
           [ li []
@@ -21,8 +21,8 @@ navigationView model =
           ]
         Just jwt ->
           [ li []
-            [ a [ onEventSend "click" SignOut, href "/sign-out" ] 
-              [ text "Sign out"] 
+            [ a [ onEventSend "click" SignOut, href "/sign-out" ]
+              [ text "Sign out"]
             ]
           ]
     commonLinks =

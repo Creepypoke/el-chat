@@ -6,7 +6,7 @@
   "scripts": {
     "build": "elm-make frontend/Main.elm --output=dist/elm.js",
     "watch": "chokidar \"**/*.elm\" -c \"elm-make frontend/Main.elm --output dist/elm.js\" --initial",
-    "dev": "node_modules/.bin/nodemon backend/server.js",
+    "dev": "node_modules/.bin/nodemon backend/server.js -i dist/*",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

@@ -69,6 +69,7 @@ type alias MessageToSend =
   { roomId : String
   , kind : MessageKind
   , text : Maybe String
+  , jwt : Maybe String
   }
 
 
@@ -115,3 +116,4 @@ type MessageKind
   = Text
   | Join
   | Leave
+  | Error

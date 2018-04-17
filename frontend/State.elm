@@ -74,6 +74,7 @@ update msg model =
           { roomId = room.id
           , kind = Join
           , text = Nothing
+          , jwt = model.jwtString
           }
         messageToSendString = encode 0 (messageToSendEncoder messageToSend)
       in
@@ -84,6 +85,7 @@ update msg model =
           { roomId = room.id
           , kind = Leave
           , text = Nothing
+          , jwt = model.jwtString
           }
         messageToSendString = encode 0 (messageToSendEncoder messageToSend)
       in

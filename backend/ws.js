@@ -1,13 +1,114 @@
 const WebSocket = require('ws')
+const jwt = require('jsonwebtoken')
+
+const consts = require('./consts')
+
 
 module.exports = (app, server, db) => {
+  app.rooms = {}
+
   const wss = new WebSocket.Server({ server })
+
+  function getUserByJwt (token, callback) {
+    const user = jwt.verify(token, app.config.salt, (err, user) => {
+      if (err) return callback(null)
+      callback(user)
+    })
+  }
+
+
+  function processMessage (ws, message, user) {
+    switch (message.kind) {
+      case 'join':
+        joinRoom(user, message.roomId)
+        break
+      case 'leave':
+        leaveRoom(user, message.roomId)
+        break
+      default:
+        const errorMessage = createErrorMessage(message.roomId, "unsupported kind of message")
+        ws.send(JSON.stringify(errorMessage))
+        break
+    }
+  }
+
+
+  function joinRoom (user, roomId) {
+    if (!app.rooms[roomId]) {
+      app.rooms[roomId] = {
+        id: roomId,
+        users: {}
+      }
+    }
+    app.rooms[roomId].users[user.id] = user
+
+    const joinMessage = createJoinMessage(roomId, user)
+
+    notifyRoom(app.rooms[roomId], joinMessage)
+  }
+
+  function leaveRoom(user, roomId) {
+    if (!app.rooms[roomId]) return
+    
+    delete app.rooms[roomId].users[user.id]
+
+    const leaveMessage = createLeaveMessage(roomId, user)
+    notifyRoom(app.rooms[roomId], leaveMessage)
+  }
+
+  function notifyRoom(room, message) {
+    Object.values(room.users).forEach((user) => {
+      user.ws.send(JSON.stringify(message))
+    })
+  }
+
+
+  function createErrorMessage (roomId, errorText) {
+    return {
+      id: roomId,
+      message: {
+        text : errorText,
+        kind : consts.MESSAGE_TYPES.ERROR
+      }
+    }
+  }
+
+  function createJoinMessage (roomId, user) {
+    return {
+      id: roomId,
+      message: {
+        text: `${user.name} joined room`,
+        kind: consts.MESSAGE_TYPES.JOIN
+      }
+    }
+  }
+
+  function createLeaveMessage (roomId, user) {
+    return {
+      id: roomId,
+      message: {
+        text: `${user.name} leaved room`,
+        kind: consts.MESSAGE_TYPES.LEAVE
+      }
+    }
+  }
 
   wss.on("connection", (ws, req) => {
 
     ws.on("message", (message) => {
-      console.log("received: %s", message)
-      ws.send(JSON.stringify(wsMessage));
+      messageObj = JSON.parse(message)
+
+      const jwt = messageObj.jwt
+
+      getUserByJwt(jwt, (user) => {
+        if (user) {
+          user.ws = ws
+          processMessage(ws, messageObj, user)
+        } else {
+          const errorMessage = createErrorMessage(messageObj.roomId, "Authentication failed")
+          ws.send(JSON.stringify(errorMessage))
+        }
+      })
     })
 
     ws.on("close", () => {
@@ -15,6 +116,9 @@ module.exports = (app, server, db) => {
     })
   })
 }
+
+
+
 
 const user = {
   "name" : "admin",
@@ -27,6 +131,7 @@ const message = {
   text : "hello there",
   kind : "text"
 }
+
 
 const wsMessage = {
   roomId : "5ace3041c7925ccc3cd78205",

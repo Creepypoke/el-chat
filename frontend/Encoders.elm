@@ -34,6 +34,7 @@ messageToSendEncoder messageToSend =
     [ ( "roomId", string messageToSend.roomId)
     , ( "kind", encodeMessageKind messageToSend.kind)
     , ( "text", encodeMaybeString messageToSend.text)
+    , ( "jwt", encodeMaybeString messageToSend.jwt)
     ]
 
 
