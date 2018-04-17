@@ -47,6 +47,8 @@ encodeMessageKind messageKind =
       string "leave"
     Text ->
       string "text"
+    Error ->
+      string "error"
 
 
 encodeMaybeString : Maybe String -> Value

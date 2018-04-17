@@ -38,8 +38,8 @@ type alias Room =
 
 
 type alias Message =
-  { id : String
-  , from : User
+  { id : Maybe String
+  , from : Maybe User
   , text : String
   , kind : MessageKind
   }

@@ -49,7 +49,7 @@ module.exports = (app, server, db) => {
 
   function leaveRoom(user, roomId) {
     if (!app.rooms[roomId]) return
-    
+
     delete app.rooms[roomId].users[user.id]
 
     const leaveMessage = createLeaveMessage(roomId, user)
@@ -65,7 +65,7 @@ module.exports = (app, server, db) => {
 
   function createErrorMessage (roomId, errorText) {
     return {
-      id: roomId,
+      roomId: roomId,
       message: {
         text : errorText,
         kind : consts.MESSAGE_TYPES.ERROR
@@ -75,7 +75,7 @@ module.exports = (app, server, db) => {
 
   function createJoinMessage (roomId, user) {
     return {
-      id: roomId,
+      roomId: roomId,
       message: {
         text: `${user.name} joined room`,
         kind: consts.MESSAGE_TYPES.JOIN
@@ -85,7 +85,7 @@ module.exports = (app, server, db) => {
 
   function createLeaveMessage (roomId, user) {
     return {
-      id: roomId,
+      roomId: roomId,
       message: {
         text: `${user.name} leaved room`,
         kind: consts.MESSAGE_TYPES.LEAVE

@@ -236,7 +236,7 @@ processWsMessage model wsMessageString =
           Nothing ->
             model
     Result.Err err ->
-      model
+      { model | messages = [toString(err)] }
 
 
 findRoom : WebData (List Room) -> String -> Maybe Room
@@ -284,7 +284,7 @@ updateRoomMessages rooms room messages =
         (\n ->
           case n.id == room.id of
             True ->
-              { n | messages = messages }
+              Debug.log "err" { n | messages = messages }
             False ->
               n
         ) rooms)

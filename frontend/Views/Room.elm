@@ -17,8 +17,27 @@ roomView model room =
 
 messageView : Message -> Html Msg
 messageView message =
-  div []
-    [ strong []
-        [ text (message.from.name ++ ":") ]
-    , text (" " ++ message.text )
-    ]
+  case message.kind of
+    Text ->
+      div []
+        [ strong []
+            [ text (fromName message.from ++ ":") ]
+        , text (" " ++ message.text )
+        ]
+    Join ->
+      div []
+        [ text (" " ++ message.text ) ]
+    Leave ->
+      div []
+        [ text (" " ++ message.text ) ]
+    Error ->
+      div []
+        [ text (" " ++ message.text ) ]
+
+fromName : Maybe User -> String
+fromName user =
+  case user of
+    Just user ->
+      user.name
+    Nothing ->
+      ""
