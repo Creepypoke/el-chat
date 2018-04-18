@@ -252,7 +252,7 @@ parseErr err =
     _ ->
       [
         { field = "General"
-        , message = "Somethinh went wrong"
+        , message = "Something went wrong"
         }
       ]
 
