@@ -49,6 +49,8 @@ encodeMessageKind messageKind =
       string "text"
     Error ->
       string "error"
+    Recent ->
+      string "recent"
 
 
 encodeMaybeString : Maybe String -> Value

@@ -47,6 +47,7 @@ type alias Room =
 
 type alias Message =
   { id : Maybe String
+  , datetime: String
   , from : Maybe User
   , text : String
   , kind : MessageKind
@@ -100,6 +101,7 @@ type Msg
   | RoomResponse (WebData Room)
   | RoomsResponse (WebData (List Room))
   | JoinRoom Room
+  | RequestRecentMessages Room
   | LeaveRoom Room (Maybe Msg)
   | UpdateAuthForm Field String
   | UpdateNewRoomForm Field String
@@ -135,3 +137,4 @@ type MessageKind
   | Join
   | Leave
   | Error
+  | Recent

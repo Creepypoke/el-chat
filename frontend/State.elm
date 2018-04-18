@@ -105,6 +105,18 @@ update msg model =
           }
         messageToSendString = encode 0 (messageToSendEncoder messageToSend)
       in
+        andThen (RequestRecentMessages room)
+          <| ( model, WebSocket.send model.wsUrl messageToSendString )
+    RequestRecentMessages room ->
+      let
+        messageToSend =
+          { roomId = room.id
+          , kind = Recent
+          , text = Just "10"
+          , jwt = model.jwtString
+          }
+        messageToSendString = encode 0 (messageToSendEncoder messageToSend)
+      in
         ( model, WebSocket.send model.wsUrl messageToSendString )
     LeaveRoom room nextMsg ->
       let
@@ -280,7 +292,7 @@ processWsMessage model wsMessageString =
             let
               roomMessages = currentRoom.messages
               oneMessage = parseOneMessage wsMessage.message
-              listMessages = parseListMessages wsMessage.messages
+              listMessages = parseListMessages (Debug.log "err" (wsMessage.messages))
               messages = roomMessages ++ oneMessage ++ listMessages
             in
               { model | currentRoom = updateCurrentRoomMessages currentRoom messages }
@@ -376,14 +388,11 @@ nextMsg nextRoute model =
   in
     case model.currentRoute of
       RoomRoute roomId ->
-        let
-          room = findRoomById model.rooms roomId
-        in
-          case room of
-            Nothing ->
-              msg
-            Just room ->
-              Just (LeaveRoom room msg)
+        case model.currentRoom of
+          RemoteData.Success room ->
+            Just (LeaveRoom room msg)
+          _ ->
+            msg
       _ ->
         msg
 

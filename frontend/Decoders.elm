@@ -55,14 +55,15 @@ wsMessageDecoder : Decoder WsMessage
 wsMessageDecoder =
   decode WsMessage
     |> required "roomId" string
-    |> optional "message" (maybe messageDecoder) Nothing
-    |> optional "messages" (maybe (list messageDecoder)) Nothing
+    |> required "message" (maybe messageDecoder)
+    |> required "messages" (maybe (list messageDecoder))
 
 
 messageDecoder : Decoder Message
 messageDecoder =
   decode Message
     |> optional "id" (maybe string) Nothing
+    |> required "datetime" string
     |> optional "from" (maybe userDecoder) Nothing
     |> required "text" string
     |> required "kind" messageKind
@@ -104,6 +105,8 @@ messageKind =
             succeed Leave
           "error" ->
             succeed Error
+          "recent" ->
+            succeed Recent
           _ ->
             fail <| "Unsupported message kind"
   in

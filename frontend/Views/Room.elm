@@ -56,6 +56,9 @@ messageView message =
     Error ->
       div []
         [ text (" " ++ message.text ) ]
+    _ ->
+      div []
+        []
 
 
 fromName : Maybe User -> String

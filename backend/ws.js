@@ -2,10 +2,12 @@ const WebSocket = require('ws')
 const jwt = require('jsonwebtoken')
 
 const consts = require('./consts')
-
+const utils = require('./utils')
 
 module.exports = (app, server, db) => {
   app.rooms = {}
+
+  const messagesCollection = db.collection("messages")
 
   const wss = new WebSocket.Server({ server })
 
@@ -16,7 +18,7 @@ module.exports = (app, server, db) => {
     })
   }
 
-  
+
   function processMessage (ws, message, user) {
     switch (message.kind) {
       case consts.MESSAGE_TYPES.JOIN:
@@ -27,6 +29,9 @@ module.exports = (app, server, db) => {
         break
       case consts.MESSAGE_TYPES.TEXT:
         textMessage(user, message.roomId, message.text)
+        break
+      case consts.MESSAGE_TYPES.RECENT:
+        recentMessages(user, message.roomId, message.text)
         break
       default:
         const errorMessage = createErrorMessage(message.roomId, "unsupported kind of message")
@@ -46,23 +51,51 @@ module.exports = (app, server, db) => {
     app.rooms[roomId].users[user.id] = user
 
     const joinMessage = createJoinMessage(roomId, user)
+    const normalizedMessage = utils.messageNormalizer(joinMessage)
 
-    notifyRoom(app.rooms[roomId], joinMessage)
+    messagesCollection.insertOne(normalizedMessage, (err, result) => {
+      joinMessage["id"] = result.inseredId
+      notifyRoom(app.rooms[roomId], joinMessage)
+    })
   }
 
   function leaveRoom(user, roomId) {
     if (!app.rooms[roomId]) return
 
     const leaveMessage = createLeaveMessage(roomId, user)
-    notifyRoom(app.rooms[roomId], leaveMessage)
-    delete app.rooms[roomId].users[user.id]
+    const normalizedMessage = utils.messageNormalizer(leaveMessage)
 
+    messagesCollection.insertOne(normalizedMessage, (err, result) => {
+      leaveMessage["id"] = result.inseredId
+      notifyRoom(app.rooms[roomId], leaveMessage)
+      delete app.rooms[roomId].users[user.id]
+    })
   }
 
   function textMessage(user, roomId, text) {
     const message = createTextMessage(roomId, user, text)
-    notifyRoom(app.rooms[roomId], message)
+    const normalizedMessage = utils.messageNormalizer(message)
+
+    messagesCollection.insertOne(normalizedMessage, (err, result) => {
+      if (err) return
+
+      message["id"] = result.inseredId
+      notifyRoom(app.rooms[roomId], message)
+    })
   }
+
+  function recentMessages(user, roomId, count) {
+    messagesCollection
+    .find({ roomId: roomId })
+    .sort("datetime", 1)
+    .toArray((err, messages) => {
+      if (err) return
+
+      const message = createRecentMessage(roomId, messages)
+      user.ws.send(JSON.stringify(message))
+    })
+  }
+
 
   function notifyRoom(room, message) {
     Object.values(room.users).forEach((user) => {
@@ -74,11 +107,12 @@ module.exports = (app, server, db) => {
     return {
       roomId: roomId,
       message: {
-        id: "123",
         text: text,
+        datetime: Date(),
         kind: consts.MESSAGE_TYPES.TEXT,
         from: cleanUser(user)
-      }
+      },
+      messages: []
     }
   }
 
@@ -86,9 +120,11 @@ module.exports = (app, server, db) => {
     return {
       roomId: roomId,
       message: {
+        datetime: Date(),
         text : errorText,
         kind : consts.MESSAGE_TYPES.ERROR
-      }
+      },
+      messages: []
     }
   }
 
@@ -96,19 +132,32 @@ module.exports = (app, server, db) => {
     return {
       roomId: roomId,
       message: {
+        datetime: Date(),
         text: `${user.name} joined room`,
         kind: consts.MESSAGE_TYPES.JOIN
-      }
+      },
+      messages: []
     }
   }
 
   function createLeaveMessage (roomId, user) {
     return {
       roomId: roomId,
+      datetime: Date(),
       message: {
+        datetime: Date(),
         text: `${user.name} leaved room`,
         kind: consts.MESSAGE_TYPES.LEAVE
-      }
+      },
+      messages: []
+    }
+  }
+
+  function createRecentMessage (roomId, messages) {
+    return {
+      roomId: roomId,
+      messages: messages.map(utils.messageBuilder),
+      message: null
     }
   }
 
