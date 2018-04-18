@@ -24,11 +24,7 @@ view model =
         SignInRoute ->
           signInView model
         RoomRoute roomId ->
-          case findRoomById model.rooms roomId of
-            Just room ->
-              roomView model room
-            Nothing ->
-              notFoundView
+          roomView model
         NotFoundRoute ->
           notFoundView
     , div []

@@ -16,7 +16,7 @@ module.exports = (app, server, db) => {
     })
   }
 
-
+  
   function processMessage (ws, message, user) {
     switch (message.kind) {
       case consts.MESSAGE_TYPES.JOIN:
@@ -53,10 +53,10 @@ module.exports = (app, server, db) => {
   function leaveRoom(user, roomId) {
     if (!app.rooms[roomId]) return
 
-    delete app.rooms[roomId].users[user.id]
-
     const leaveMessage = createLeaveMessage(roomId, user)
     notifyRoom(app.rooms[roomId], leaveMessage)
+    delete app.rooms[roomId].users[user.id]
+
   }
 
   function textMessage(user, roomId, text) {

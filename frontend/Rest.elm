@@ -1,4 +1,4 @@
-module Rest exposing (getRooms, signIn, signUp, createRoom)
+module Rest exposing (getRoom, getRooms, signIn, signUp, createRoom)
 
 import Http
 import RemoteData
@@ -7,6 +7,14 @@ import Json.Decode exposing (list, string)
 import Types exposing (..)
 import Decoders exposing (..)
 import Encoders exposing (..)
+
+
+getRoom : String -> Cmd Msg
+getRoom roomId =
+  roomDecoder
+    |> Http.get ("/api/rooms/" ++ roomId)
+    |> RemoteData.sendRequest
+    |> Cmd.map RoomResponse
 
 
 getRooms : Cmd Msg

@@ -7,6 +7,7 @@ import Navigation exposing (Location)
 
 type alias Model =
   { rooms : WebData (List Room)
+  , currentRoom: WebData Room
   , currentRoute : Route
   , authForm : AuthForm
   , newRoomForm : NewRoomForm
@@ -94,7 +95,9 @@ type alias Flags =
 type Msg
   = LocationChanged Location
   | NewUrl String
+  | RequestRoom String
   | RequestRooms
+  | RoomResponse (WebData Room)
   | RoomsResponse (WebData (List Room))
   | JoinRoom Room
   | LeaveRoom Room (Maybe Msg)

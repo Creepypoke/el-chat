@@ -1,5 +1,6 @@
 const path = require("path")
 const jwt = require("jsonwebtoken")
+const ObjectID = require("mongodb").ObjectID
 
 const utils = require("./utils")
 
@@ -13,6 +14,15 @@ module.exports = (app, db) => {
 
       rooms = rooms.map(utils.roomBuilder)
       res.json(rooms)
+    })
+  })
+
+  app.get("/api/rooms/:roomId", (req, res, next) => {
+    roomsCollection.findOne({ _id: ObjectID(req.params.roomId) }, (err, room) => {
+      if (err) return next(err)
+
+      if (!room) return res.status(404).send(null)
+      res.json(utils.roomBuilder(room))
     })
   })
 

@@ -1,23 +1,41 @@
 module Views.Room exposing (roomView)
 
+import RemoteData
+import Http
 import Html exposing (..)
 import Html.Events exposing (onInput)
 import Html.Attributes exposing (..)
 
-
-
 import Types exposing (..)
 import Utils exposing (..)
 
-roomView : Model -> Room -> Html Msg
-roomView model room =
-  div []
-    [ h1 []
-      [ text (room.name ++ " # " ++ room.id) ]
-    , div []
-        (List.map messageView room.messages)
-    , messageForm model room
-    ]
+
+roomView : Model -> Html Msg
+roomView model =
+  case model.currentRoom of
+    RemoteData.Success room ->
+      div []
+        [ h1 []
+          [ text (room.name ++ " # " ++ room.id) ]
+        , div []
+            (List.map messageView room.messages)
+        , messageForm model room
+        ]
+    RemoteData.Loading ->
+      div []
+        [ text "loading ..."]
+    RemoteData.Failure err ->
+      case err of
+        Http.BadStatus res ->
+          div []
+            [ strong []
+                [ text (toString res.status.code) ]
+            , text (" " ++ res.status.message)
+            ]
+        _ ->
+          div [] []
+    _ ->
+      div [] []
 
 
 messageView : Message -> Html Msg

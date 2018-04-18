@@ -13,12 +13,13 @@ import Utils exposing (..)
 import Routing exposing (extractRoute)
 import Decoders exposing (decodeJwtString, decodeErrorMessages, decodeWsMessage)
 import Encoders exposing (messageToSendEncoder)
-import Rest exposing (getRooms, signIn, signUp, createRoom)
+import Rest exposing (getRoom, getRooms, signIn, signUp, createRoom)
 
 
 initialModel : Location -> Flags -> Model
 initialModel location flags =
-  { rooms = RemoteData.Loading
+  { rooms = RemoteData.NotAsked
+  , currentRoom = RemoteData.NotAsked
   , currentRoute = extractRoute location
   , authForm = emptyAuthForm
   , newRoomForm = emptyNewRoomForm
@@ -53,12 +54,30 @@ emptyNewMessageForm =
 
 init : Flags -> Location -> (Model, Cmd Msg)
 init flags location =
-  ( initialModel location flags, getRooms )
+  let
+    route = extractRoute location
+    model = initialModel location flags
+    msg = msgOnRoute route model
+  in
+    case msg of
+      Nothing ->
+        ( model, Cmd.none )
+      Just msg ->
+        update msg model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
+    RoomResponse room ->
+      let
+        newModel = { model | currentRoom = room }
+      in
+        case room of
+          RemoteData.Success room ->
+            update (JoinRoom room) newModel
+          _ ->
+            ( newModel, Cmd.none )
     RoomsResponse rooms ->
       ( { model | rooms = rooms }, Cmd.none )
     LocationChanged location ->
@@ -72,6 +91,8 @@ update msg model =
             update msg newModel
           Nothing ->
             ( newModel, Cmd.none )
+    RequestRoom roomId ->
+      ( model, getRoom roomId )
     RequestRooms ->
       ( model, getRooms )
     JoinRoom room ->
@@ -253,18 +274,20 @@ processWsMessage : Model -> String -> Model
 processWsMessage model wsMessageString =
   case decodeWsMessage wsMessageString of
     Result.Ok wsMessage ->
-      let
-        room = findRoom model.rooms wsMessage.roomId
-        roomMessages = getRoomMessages room
-        oneMessage = parseOneMessage wsMessage.message
-        listMessages = parseListMessages wsMessage.messages
-        messages = roomMessages ++ oneMessage ++ listMessages
-      in
-        case room of
-          Just room ->
-            { model | rooms = updateRoomMessages model.rooms room messages }
-          Nothing ->
+      case model.currentRoom of
+        RemoteData.Success currentRoom ->
+          if wsMessage.roomId == currentRoom.id then
+            let
+              roomMessages = currentRoom.messages
+              oneMessage = parseOneMessage wsMessage.message
+              listMessages = parseListMessages wsMessage.messages
+              messages = roomMessages ++ oneMessage ++ listMessages
+            in
+              { model | currentRoom = updateCurrentRoomMessages currentRoom messages }
+          else
             model
+        _ ->
+          model
     Result.Err err ->
       { model | messages = [toString(err)] }
 
@@ -306,6 +329,11 @@ parseListMessages messages =
       []
 
 
+updateCurrentRoomMessages : Room -> List Message -> WebData Room
+updateCurrentRoomMessages room messages =
+  RemoteData.succeed { room | messages = messages }
+
+
 updateRoomMessages : WebData (List Room) -> Room -> List Message -> WebData (List Room)
 updateRoomMessages rooms room messages =
   case rooms of
@@ -326,14 +354,17 @@ msgOnRoute : Route -> Model -> Maybe Msg
 msgOnRoute route model =
   case route of
     RoomRoute roomId ->
-      let
-        room = findRoomById model.rooms roomId
-      in
-        case room of
-          Just room ->
-            Just (JoinRoom room)
-          Nothing ->
-            Nothing
+      Just (RequestRoom roomId)
+      -- let
+      --   room = findRoomById model.rooms roomId
+      -- in
+      --   case room of
+      --     Just room ->
+      --       Just (JoinRoom room)
+      --     Nothing ->
+      --       Nothing
+    HomeRoute ->
+      Just RequestRooms
     _ ->
       Nothing
 
