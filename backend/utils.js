@@ -34,8 +34,11 @@ exports.messageNormalizer = (message) => {
 }
 
 exports.userBuilder = (user) => {
+  let id = user.id
+  if (!id) id = user._id
+
   return {
-    id: user._id,
+    id: id,
     name: user.name
   }
 }

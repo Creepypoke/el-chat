@@ -13,6 +13,13 @@ module.exports = (app, db) => {
       if (err) return next(err)
 
       rooms = rooms.map(utils.roomBuilder)
+
+      rooms.forEach((room) => {
+        if (app.rooms[room.id]) {
+          room.users = Object.values(app.rooms[room.id].users).map(utils.userBuilder)
+        }
+      })
+
       res.json(rooms)
     })
   })
