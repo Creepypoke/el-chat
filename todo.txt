@@ -1,12 +1,12 @@
-Что дальше
+Add markup
+Add styles
+Show navigation active page
+Show the list of the rooms on the side of the room view
+Add smiles widget
 
-WebSocket соединение
-> User visit Room's page
-> Connect to the ws server 
-> Receive list of recent messages
+Refactor backend with TypeScript
+Parsing messages for links/mentions
+Reply to the messages
+Send pictures
 
-Вход в комнату с вводом имени
-Добавить разметку
-Добавить css (less)
-Показывать в navigation активную страницу
-...
+Analytics pages (work with tables and graps)
