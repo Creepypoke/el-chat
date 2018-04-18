@@ -9,7 +9,7 @@ import Subscriptions exposing (..)
 import State exposing (init, update)
 
 
-main : Program (Maybe String) Model Msg
+main : Program Flags Model Msg
 main =
   Navigation.programWithFlags LocationChanged
     { init = init

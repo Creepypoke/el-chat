@@ -14,6 +14,7 @@ type alias Model =
   , jwt : Maybe JwtToken
   , jwtString : Maybe String
   , messages : List String
+  , wsUrl : String
   }
 
 
@@ -84,6 +85,11 @@ type alias ErrorMessage =
   , message : String
   }
 
+
+type alias Flags =
+  { jwt: Maybe String
+  , wsUrl: String
+  }
 
 type Msg
   = LocationChanged Location

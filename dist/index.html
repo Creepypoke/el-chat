@@ -9,8 +9,14 @@
 		<script type="text/javascript" src="/elm.js"></script>
 		<script>
 			var jwt = localStorage.getItem('jwt');
+			var wsUrl = "wss://" + window.location.host;
+
+			var options = {
+				jwt: jwt,
+				wsUrl: wsUrl
+			}
 			var node = document.getElementById('main');
-			var app = Elm.Main.embed(node, jwt);
+			var app = Elm.Main.embed(node, options);
 
 			app.ports.setJwt.subscribe( function(newJwt) {
 				localStorage.setItem('jwt', newJwt)

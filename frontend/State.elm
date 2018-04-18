@@ -10,23 +10,23 @@ import Navigation exposing (Location, newUrl)
 import Ports exposing (..)
 import Types exposing (..)
 import Utils exposing (..)
-import Settings exposing (..)
 import Routing exposing (extractRoute)
 import Decoders exposing (decodeJwtString, decodeErrorMessages, decodeWsMessage)
 import Encoders exposing (messageToSendEncoder)
 import Rest exposing (getRooms, signIn, signUp, createRoom)
 
 
-initialModel : Location -> Maybe String -> Model
-initialModel location jwtString =
+initialModel : Location -> Flags -> Model
+initialModel location flags =
   { rooms = RemoteData.Loading
   , currentRoute = extractRoute location
   , authForm = emptyAuthForm
   , newRoomForm = emptyNewRoomForm
   , newMessageForm = emptyNewMessageForm
-  , jwt = decodeJwtString jwtString
-  , jwtString = jwtString
+  , jwt = decodeJwtString flags.jwt
+  , jwtString = flags.jwt
   , messages = []
+  , wsUrl = flags.wsUrl
   }
 
 
@@ -51,9 +51,9 @@ emptyNewMessageForm =
   { text = "" }
 
 
-init : Maybe String -> Location -> (Model, Cmd Msg)
-init jwt location =
-  ( initialModel location jwt, getRooms )
+init : Flags -> Location -> (Model, Cmd Msg)
+init flags location =
+  ( initialModel location flags, getRooms )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -84,7 +84,7 @@ update msg model =
           }
         messageToSendString = encode 0 (messageToSendEncoder messageToSend)
       in
-        ( model, WebSocket.send wsUrl messageToSendString )
+        ( model, WebSocket.send model.wsUrl messageToSendString )
     LeaveRoom room nextMsg ->
       let
         messageToSend =
@@ -98,9 +98,9 @@ update msg model =
         case nextMsg of
           Just nextMsg ->
             andThen nextMsg
-              <| ( model, WebSocket.send wsUrl messageToSendString )
+              <| ( model, WebSocket.send model.wsUrl messageToSendString )
           Nothing ->
-            ( model, WebSocket.send wsUrl messageToSendString )
+            ( model, WebSocket.send model.wsUrl messageToSendString )
     NewUrl url ->
       ( model, newUrl url )
     UpdateAuthForm field value ->
@@ -141,7 +141,7 @@ update msg model =
           }
         messageToSendString = encode 0 (messageToSendEncoder messageToSend)
       in
-        ( { model | newMessageForm = emptyNewMessageForm }, WebSocket.send wsUrl messageToSendString)
+        ( { model | newMessageForm = emptyNewMessageForm }, WebSocket.send model.wsUrl messageToSendString)
     SignedIn jwtString ->
       case jwtString of
         Result.Ok jwtString ->
