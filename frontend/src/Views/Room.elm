@@ -18,7 +18,7 @@ roomView model =
         [ h1 []
           [ text (room.name ++ " # " ++ room.id) ]
         , div [class "messages-log"]
-            (List.map messageView room.messages)
+            (List.map messageView (List.reverse room.messages))
         , messageForm model room
         ]
     RemoteData.Loading ->
