@@ -64,7 +64,7 @@ messageDecoder =
   decode Message
     |> optional "id" (maybe string) Nothing
     |> required "datetime" string
-    |> optional "from" (maybe userDecoder) Nothing
+    |> required "from" userDecoder
     |> required "text" string
     |> required "kind" messageKind
 
@@ -96,18 +96,18 @@ messageKind =
   let
     convert : String -> Decoder MessageKind
     convert raw =
-        case raw of
-          "text" ->
-            succeed Text
-          "join" ->
-            succeed Join
-          "leave" ->
-            succeed Leave
-          "error" ->
-            succeed Error
-          "recent" ->
-            succeed Recent
-          _ ->
-            fail <| "Unsupported message kind"
+      case raw of
+        "text" ->
+          succeed Text
+        "join" ->
+          succeed Join
+        "leave" ->
+          succeed Leave
+        "error" ->
+          succeed Error
+        "recent" ->
+          succeed Recent
+        _ ->
+          fail <| "Unsupported message kind"
   in
       string |> andThen convert

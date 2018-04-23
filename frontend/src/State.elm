@@ -323,19 +323,54 @@ processWsMessage model wsMessageString =
       case model.currentRoom of
         RemoteData.Success currentRoom ->
           if wsMessage.roomId == currentRoom.id then
-            let
-              roomMessages = currentRoom.messages
-              oneMessage = parseOneMessage wsMessage.message
-              listMessages = parseListMessages wsMessage.messages
-              messages = roomMessages ++ oneMessage ++ listMessages
-            in
-              { model | currentRoom = updateCurrentRoomMessages currentRoom messages }
+            updateCurrentRoom currentRoom model wsMessage
           else
             model
         _ ->
           model
     Result.Err err ->
-      { model | messages = [toString(err)] }
+      { model | messages = [toString(err)] } -- debug mode
+
+
+updateCurrentRoom : Room -> Model -> WsMessage -> Model
+updateCurrentRoom currentRoom model wsMessage =
+  let
+    roomMessages = currentRoom.messages
+    oneMessage = parseOneMessage wsMessage.message
+    manyMessages = parseListMessages wsMessage.messages
+    newMessages = oneMessage ++ manyMessages
+    newCurrentRoom = RemoteData.succeed (List.foldr addMessage currentRoom newMessages)
+  in
+    { model | currentRoom  = newCurrentRoom }
+
+
+addMessage : Message -> Room -> Room
+addMessage message room =
+  case message.kind of
+    Join ->
+      joinRoomMessage message room
+    Text ->
+      { room | messages = message :: room.messages }
+    Leave ->
+      leaveRoomMessage message room
+    _ ->
+      room
+
+
+joinRoomMessage : Message -> Room -> Room
+joinRoomMessage message room =
+  { room
+  | users = message.from :: room.users
+  , messages = message :: room.messages
+  }
+
+
+leaveRoomMessage : Message -> Room -> Room
+leaveRoomMessage message room =
+  { room
+  | users = List.filter (\n -> n.name /= message.from.name) room.users
+  , messages = message :: room.messages
+  }
 
 
 findRoom : WebData (List Room) -> String -> Maybe Room

@@ -1,5 +1,5 @@
+Fix message order
 Show the list of the rooms on the side of the room view
-Add smiles widget
 Refactor backend with TypeScript
 Parsing messages for links/mentions
 Reply to the messages

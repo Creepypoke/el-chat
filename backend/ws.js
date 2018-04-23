@@ -67,8 +67,8 @@ module.exports = (app, server, db) => {
 
     messagesCollection.insertOne(normalizedMessage, (err, result) => {
       leaveMessage["id"] = result.inseredId
-      notifyRoom(app.rooms[roomId], leaveMessage)
       delete app.rooms[roomId].users[user.id]
+      notifyRoom(app.rooms[roomId], leaveMessage)
     })
   }
 
@@ -122,7 +122,8 @@ module.exports = (app, server, db) => {
       message: {
         datetime: Date(),
         text : errorText,
-        kind : consts.MESSAGE_TYPES.ERROR
+        kind : consts.MESSAGE_TYPES.ERROR,
+        from: { name: "" }
       },
       messages: []
     }
@@ -134,7 +135,8 @@ module.exports = (app, server, db) => {
       message: {
         datetime: Date(),
         text: `${user.name} joined room`,
-        kind: consts.MESSAGE_TYPES.JOIN
+        kind: consts.MESSAGE_TYPES.JOIN,
+        from: cleanUser(user)
       },
       messages: []
     }
@@ -147,7 +149,8 @@ module.exports = (app, server, db) => {
       message: {
         datetime: Date(),
         text: `${user.name} leaved room`,
-        kind: consts.MESSAGE_TYPES.LEAVE
+        kind: consts.MESSAGE_TYPES.LEAVE,
+        from: cleanUser(user)
       },
       messages: []
     }
@@ -177,6 +180,7 @@ module.exports = (app, server, db) => {
 
       getUserByJwt(jwt, (user) => {
         if (user) {
+          ws.user = user
           user.ws = ws
           processMessage(ws, messageObj, user)
         } else {
@@ -187,51 +191,12 @@ module.exports = (app, server, db) => {
     })
 
     ws.on("close", () => {
-
+      if (ws.user) {
+        const user = ws.user
+        Object.values(app.rooms).forEach(room => {
+          if (room.users[user.id]) leaveRoom(user, room.id)
+        })
+      }
     })
   })
 }
-
-
-
-
-const user = {
-  "name" : "admin",
-  "id": "0"
-}
-
-const message = {
-  id: "123",
-  from : user,
-  text : "hello there",
-  kind : "text"
-}
-
-
-const wsMessage = {
-  roomId : "5ace3041c7925ccc3cd78205",
-  message : message,
-  messages : []
-}
-
-
-
-// type alias WsMessage =
-//   { roomId : String
-//   , message : Maybe Message
-//   , messages : Maybe (List Message)
-//   }
-
-
-// type alias Message =
-//   { id : String
-//   , from : User
-//   , text : String
-//   , kind : String
-//   }
-
-
-// type alias User =
-//   { name : String
-//   , id : String
-//   }

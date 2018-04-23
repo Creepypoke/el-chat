@@ -45,7 +45,7 @@ messageView message =
     Text ->
       div []
         [ strong []
-            [ text (fromName message.from ++ ":") ]
+            [ text (message.from.name ++ ":") ]
         , text (" " ++ message.text )
         ]
     Join ->
@@ -60,15 +60,6 @@ messageView message =
     _ ->
       div []
         []
-
-
-fromName : Maybe User -> String
-fromName user =
-  case user of
-    Just user ->
-      user.name
-    Nothing ->
-      ""
 
 
 messageForm : Model -> Room -> Html Msg
@@ -95,7 +86,7 @@ messageForm model room =
         []
     , div
         [ class "emoji-widget"]
-        (case Debug.log "err" model.newMessageForm.showEmojiWidget of
+        (case model.newMessageForm.showEmojiWidget of
           True ->
             [ emojiWidget ]
           False ->

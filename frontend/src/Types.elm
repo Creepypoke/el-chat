@@ -50,7 +50,7 @@ type alias Room =
 type alias Message =
   { id : Maybe String
   , datetime: String
-  , from : Maybe User
+  , from : User
   , text : String
   , kind : MessageKind
   }
