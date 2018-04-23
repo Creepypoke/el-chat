@@ -128,6 +128,7 @@ type Route
   = HomeRoute
   | SignUpRoute
   | SignInRoute
+  | SignOutRoute
   | RoomRoute String
   | NotFoundRoute
 

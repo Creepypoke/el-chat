@@ -83,7 +83,7 @@ update msg model =
     LocationChanged location ->
       let
         route = extractRoute location
-        msg = nextMsg route model
+        msg = Debug.log "next msg" (nextMsg route model)
         newModel = { model | currentRoute = route }
       in
         case msg of
@@ -292,7 +292,7 @@ processWsMessage model wsMessageString =
             let
               roomMessages = currentRoom.messages
               oneMessage = parseOneMessage wsMessage.message
-              listMessages = parseListMessages (Debug.log "err" (wsMessage.messages))
+              listMessages = parseListMessages wsMessage.messages
               messages = roomMessages ++ oneMessage ++ listMessages
             in
               { model | currentRoom = updateCurrentRoomMessages currentRoom messages }
@@ -354,7 +354,7 @@ updateRoomMessages rooms room messages =
         (\n ->
           case n.id == room.id of
             True ->
-              Debug.log "err" { n | messages = messages }
+              { n | messages = messages }
             False ->
               n
         ) rooms)
@@ -364,7 +364,7 @@ updateRoomMessages rooms room messages =
 
 msgOnRoute : Route -> Model -> Maybe Msg
 msgOnRoute route model =
-  case route of
+  case Debug.log "errr" route of
     RoomRoute roomId ->
       Just (RequestRoom roomId)
       -- let
@@ -377,6 +377,8 @@ msgOnRoute route model =
       --       Nothing
     HomeRoute ->
       Just RequestRooms
+    SignOutRoute ->
+      Just SignOut
     _ ->
       Nothing
 

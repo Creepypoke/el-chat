@@ -15,6 +15,22 @@ extractRoute location =
       NotFoundRoute
 
 
+extractUrl : Route -> String
+extractUrl route =
+  case route of
+    HomeRoute ->
+      "/"
+    SignUpRoute ->
+      "/sign-up"
+    SignInRoute ->
+      "/sign-in"
+    RoomRoute roomId ->
+      "/rooms/" ++ roomId
+    SignOutRoute ->
+      "/sign-out"
+    NotFoundRoute ->
+      "/"
+
 matchRoute : Parser (Route -> a) a
 matchRoute =
   oneOf
@@ -22,4 +38,5 @@ matchRoute =
     , map SignUpRoute (s "sign-up")
     , map SignInRoute (s "sign-in")
     , map RoomRoute (s "rooms" </> string)
+    , map SignOutRoute (s "sign-out")
     ]

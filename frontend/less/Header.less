@@ -3,6 +3,7 @@
 @header-width: 60px;
 
 .header {
+  text-align: right;
   height: @header-width;
   background-color: @primary-color;
 
@@ -15,5 +16,9 @@
     min-width: 100px;
     line-height: @header-width;
     text-align: center;
+
+    &.active {
+      background-color: @secondary-color;
+    }
   }
 }

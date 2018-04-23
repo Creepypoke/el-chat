@@ -27,6 +27,8 @@ view model =
             roomView model
           NotFoundRoute ->
             notFoundView
+          SignOutRoute ->
+            roomsView model
       ]
     , div []
       (List.map text model.messages)
