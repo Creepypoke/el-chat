@@ -1,9 +1,10 @@
 module Views.Room exposing (roomView)
 
+import Debug
 import RemoteData
 import Http
 import Html exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onInput, onClick)
 import Html.Attributes exposing (..)
 
 import Types exposing (..)
@@ -74,17 +75,58 @@ messageForm : Model -> Room -> Html Msg
 messageForm model room =
   div []
     [ Html.form
-      [ onEventSend "submit" (SubmitForm (NewMessage room))]
+      [ onEventSend "submit" (SubmitForm NewMessage)]
       [ div []
         [ input
             [ id "message"
             , type_ "text"
             , value model.newMessageForm.text
-            , onInput (UpdateForm (NewMessage room) MessageText)
+            , onInput (UpdateForm NewMessage MessageText)
             ]
             []
         , button []
             [ text "Send"]
         ]
       ]
+    , div
+        [ class "emoji-icon"
+        , onClick (ToggleEmojiWidget (not model.newMessageForm.showEmojiWidget ))
+        ]
+        []
+    , div
+        [ class "emoji-widget"]
+        (case Debug.log "err" model.newMessageForm.showEmojiWidget of
+          True ->
+            [ emojiWidget ]
+          False ->
+            []
+        )
     ]
+
+
+emojiWidget : Html Msg
+emojiWidget =
+  div []
+    [ emoji "😀"
+    , emoji "😁"
+    , emoji "😂"
+    , emoji "🤣"
+    , emoji "😃"
+    , emoji "😄"
+    , emoji "😅"
+    , emoji "😆"
+    , emoji "😉"
+    , emoji "😊"
+    , emoji "😋"
+    , emoji "😎"
+    , emoji "😍"
+    ]
+
+
+emoji : String -> Html Msg
+emoji emojiString =
+  span
+    [ class "emoji"
+    , onClick (UpdateForm NewMessage Emoji emojiString)
+    ]
+    [ text emojiString ]

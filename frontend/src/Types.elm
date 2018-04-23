@@ -34,7 +34,9 @@ type alias NewRoomForm =
 
 
 type alias NewMessageForm =
-  { text : String }
+  { text : String
+  , showEmojiWidget : Bool
+  }
 
 
 type alias Room =
@@ -110,12 +112,13 @@ type Msg
   | SignOut
   | SaveToken
   | NewWsMessage String
+  | ToggleEmojiWidget Bool
 
 
 type Form
   = SignIn
   | SignUp
-  | NewMessage Room
+  | NewMessage
   | NewRoom
   | Auth
 
@@ -125,6 +128,7 @@ type Field
   | Password
   | PasswordConfirm
   | MessageText
+  | Emoji
 
 
 type Route

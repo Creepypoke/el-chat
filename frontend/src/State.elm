@@ -48,7 +48,9 @@ emptyNewRoomForm =
 
 emptyNewMessageForm : NewMessageForm
 emptyNewMessageForm =
-  { text = "" }
+  { text = ""
+  , showEmojiWidget = False
+  }
 
 
 init : Flags -> Location -> (Model, Cmd Msg)
@@ -182,7 +184,14 @@ update msg model =
             )
     NewWsMessage message ->
       ( processWsMessage model message, Cmd.none )
-
+    ToggleEmojiWidget bool ->
+      let
+        newMessageForm =
+          { text = model.newMessageForm.text
+          , showEmojiWidget = bool
+          }
+      in
+        ( { model | newMessageForm = newMessageForm }, Cmd.none )
 
 updateForm : Model -> Form -> Field -> String -> (Model, Cmd Msg)
 updateForm model form field value =
@@ -203,10 +212,15 @@ updateForm model form field value =
           ( { model | newRoomForm = updateNewRoomFormName model.newRoomForm value }, Cmd.none )
         _ ->
           ( model, Cmd.none )
-    NewMessage room ->
+    NewMessage ->
       case field of
         MessageText ->
           ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm value }, Cmd.none )
+        Emoji ->
+          let
+            newText = model.newMessageForm.text ++ value
+          in
+            ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm newText }, Cmd.none )
         _ ->
           ( model, Cmd.none )
     _ ->
@@ -222,17 +236,21 @@ submitForm model form =
       ( model, signUp model.authForm )
     NewRoom ->
       ( model, createRoom model.newRoomForm )
-    NewMessage room ->
-      let
-        messageToSend =
-          { roomId = room.id
-          , kind = Text
-          , text = Just model.newMessageForm.text
-          , jwt = model.jwtString
-          }
-        messageToSendString = encode 0 (messageToSendEncoder messageToSend)
-      in
-        ( { model | newMessageForm = emptyNewMessageForm }, WebSocket.send model.wsUrl messageToSendString)
+    NewMessage ->
+      case model.currentRoom of
+        RemoteData.Success room ->
+          let
+            messageToSend =
+              { roomId = room.id
+              , kind = Text
+              , text = Just model.newMessageForm.text
+              , jwt = model.jwtString
+              }
+            messageToSendString = encode 0 (messageToSendEncoder messageToSend)
+          in
+            ( { model | newMessageForm = emptyNewMessageForm }, WebSocket.send model.wsUrl messageToSendString)
+        _ ->
+         ( model, Cmd.none )
     Auth ->
       ( model, Cmd.none )
 
