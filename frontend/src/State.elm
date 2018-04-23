@@ -9,7 +9,6 @@ import Navigation exposing (Location, newUrl)
 
 import Ports exposing (..)
 import Types exposing (..)
-import Utils exposing (..)
 import Routing exposing (extractRoute)
 import Decoders exposing (decodeJwtString, decodeErrorMessages, decodeWsMessage)
 import Encoders exposing (messageToSendEncoder)
@@ -83,7 +82,7 @@ update msg model =
     LocationChanged location ->
       let
         route = extractRoute location
-        msg = Debug.log "next msg" (nextMsg route model)
+        msg = nextMsg route model
         newModel = { model | currentRoute = route }
       in
         case msg of
@@ -136,45 +135,10 @@ update msg model =
             ( model, WebSocket.send model.wsUrl messageToSendString )
     NewUrl url ->
       ( model, newUrl url )
-    UpdateAuthForm field value ->
-      case field of
-        Name ->
-          ( { model | authForm = updateAuthFormName model.authForm value }, Cmd.none )
-        Password ->
-          ( { model | authForm = updateAuthFormPassword model.authForm value }, Cmd.none )
-        PasswordConfirm ->
-          ( { model | authForm = updateAuthFormPasswordConfirm model.authForm value }, Cmd.none )
-        _ ->
-          ( model, Cmd.none )
-    UpdateNewRoomForm field value ->
-      case field of
-        Name ->
-          ( { model | newRoomForm = updateNewRoomFormName model.newRoomForm value }, Cmd.none )
-        _ ->
-          ( model, Cmd.none )
-    UpdateNewMessageForm field value ->
-      case field of
-        MessageText ->
-          ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm value }, Cmd.none )
-        _ ->
-          ( model, Cmd.none )
-    SubmitSignInForm ->
-      ( model, signIn model.authForm )
-    SubmitSignUpForm ->
-      ( model, signUp model.authForm )
-    SubmitNewRoomForm ->
-      ( model, createRoom model.newRoomForm )
-    SubmitNewMessageForm room ->
-      let
-        messageToSend =
-          { roomId = room.id
-          , kind = Text
-          , text = Just model.newMessageForm.text
-          , jwt = model.jwtString
-          }
-        messageToSendString = encode 0 (messageToSendEncoder messageToSend)
-      in
-        ( { model | newMessageForm = emptyNewMessageForm }, WebSocket.send model.wsUrl messageToSendString)
+    UpdateForm form field value ->
+      updateForm model form field value
+    SubmitForm form ->
+      submitForm model form
     SignedIn jwtString ->
       case jwtString of
         Result.Ok jwtString ->
@@ -184,7 +148,6 @@ update msg model =
             errors = parseErr err
           in
             ( { model | authForm = updateAuthFormErrors model.authForm errors }, Cmd.none )
-
     RoomCreated room ->
       case room of
         Result.Ok room ->
@@ -217,8 +180,61 @@ update msg model =
             ( { model | jwt = jwt }
             , Cmd.batch [ newUrl "/", setJwt jwtString ]
             )
-    NewMessage message ->
+    NewWsMessage message ->
       ( processWsMessage model message, Cmd.none )
+
+
+updateForm : Model -> Form -> Field -> String -> (Model, Cmd Msg)
+updateForm model form field value =
+  case form of
+    Auth ->
+      case field of
+        Name ->
+          ( { model | authForm = updateAuthFormName model.authForm value }, Cmd.none )
+        Password ->
+          ( { model | authForm = updateAuthFormPassword model.authForm value }, Cmd.none )
+        PasswordConfirm ->
+          ( { model | authForm = updateAuthFormPasswordConfirm model.authForm value }, Cmd.none )
+        _ ->
+          ( model, Cmd.none )
+    NewRoom ->
+      case field of
+        Name ->
+          ( { model | newRoomForm = updateNewRoomFormName model.newRoomForm value }, Cmd.none )
+        _ ->
+          ( model, Cmd.none )
+    NewMessage room ->
+      case field of
+        MessageText ->
+          ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm value }, Cmd.none )
+        _ ->
+          ( model, Cmd.none )
+    _ ->
+      (model, Cmd.none)
+
+
+submitForm : Model -> Form -> (Model, Cmd Msg)
+submitForm model form =
+  case form of
+    SignIn ->
+      ( model, signIn model.authForm )
+    SignUp ->
+      ( model, signUp model.authForm )
+    NewRoom ->
+      ( model, createRoom model.newRoomForm )
+    NewMessage room ->
+      let
+        messageToSend =
+          { roomId = room.id
+          , kind = Text
+          , text = Just model.newMessageForm.text
+          , jwt = model.jwtString
+          }
+        messageToSendString = encode 0 (messageToSendEncoder messageToSend)
+      in
+        ( { model | newMessageForm = emptyNewMessageForm }, WebSocket.send model.wsUrl messageToSendString)
+    Auth ->
+      ( model, Cmd.none )
 
 
 updateAuthFormName : AuthForm-> String -> AuthForm
@@ -364,7 +380,7 @@ updateRoomMessages rooms room messages =
 
 msgOnRoute : Route -> Model -> Maybe Msg
 msgOnRoute route model =
-  case Debug.log "errr" route of
+  case route of
     RoomRoute roomId ->
       Just (RequestRoom roomId)
       -- let

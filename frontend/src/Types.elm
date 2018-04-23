@@ -103,18 +103,21 @@ type Msg
   | JoinRoom Room
   | RequestRecentMessages Room
   | LeaveRoom Room (Maybe Msg)
-  | UpdateAuthForm Field String
-  | UpdateNewRoomForm Field String
-  | UpdateNewMessageForm Field String
-  | SubmitSignInForm
-  | SubmitSignUpForm
-  | SubmitNewRoomForm
-  | SubmitNewMessageForm Room
+  | UpdateForm Form Field String
+  | SubmitForm Form
   | SignedIn (Result Http.Error String)
   | RoomCreated (Result Http.Error Room)
   | SignOut
   | SaveToken
-  | NewMessage String
+  | NewWsMessage String
+
+
+type Form
+  = SignIn
+  | SignUp
+  | NewMessage Room
+  | NewRoom
+  | Auth
 
 
 type Field

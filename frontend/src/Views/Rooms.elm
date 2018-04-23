@@ -47,7 +47,7 @@ newRoomForm model =
   div []
     [ h3 [] [ text "Add room"]
     , Html.form
-      [ onEventSend "submit" SubmitNewRoomForm ]
+      [ onEventSend "submit" (SubmitForm NewRoom) ]
       [ div []
         [ label [ for "name" ]
             [ text "Name" ]
@@ -56,7 +56,7 @@ newRoomForm model =
             [ id "name"
             , type_ "text"
             , value model.newRoomForm.name
-            , onInput (UpdateNewRoomForm Name)
+            , onInput (UpdateForm NewRoom Name)
             ]
             []
         , button []

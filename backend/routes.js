@@ -53,7 +53,7 @@ module.exports = (app, db) => {
       roomsCollection.insertOne(newRoom, (err, result) => {
         if (err) return next(err)
 
-        res.status(201).json({ id: result.insertedId, name: req.body.name, users: [] })
+        res.status(201).json({ id: result.insertedId, name: req.body.name, users: [], messages: [] })
       })
     })
   })

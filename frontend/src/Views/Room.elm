@@ -74,13 +74,13 @@ messageForm : Model -> Room -> Html Msg
 messageForm model room =
   div []
     [ Html.form
-      [ onEventSend "submit" (SubmitNewMessageForm room)]
+      [ onEventSend "submit" (SubmitForm (NewMessage room))]
       [ div []
         [ input
             [ id "message"
             , type_ "text"
             , value model.newMessageForm.text
-            , onInput (UpdateNewMessageForm MessageText)
+            , onInput (UpdateForm (NewMessage room) MessageText)
             ]
             []
         , button []

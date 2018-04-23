@@ -13,7 +13,7 @@ signInView model =
   div []
     [ h1 [] [ text "Sing In"]
     , Html.form
-      [ onEventSend "submit" SubmitSignInForm ]
+      [ onEventSend "submit" (SubmitForm SignIn) ]
       [ div []
         [ label [ for "name" ]
             [ text "Name" ]
@@ -22,7 +22,7 @@ signInView model =
             [ id "name"
             , type_ "text"
             , value model.authForm.name
-            , onInput (UpdateAuthForm Name)
+            , onInput (UpdateForm Auth Name)
             ]
             []
         ]
@@ -33,7 +33,7 @@ signInView model =
         , input
             [ id "password"
             , type_ "password"
-            , onInput (UpdateAuthForm Password)
+            , onInput (UpdateForm Auth Password)
             ]
             []
         ]

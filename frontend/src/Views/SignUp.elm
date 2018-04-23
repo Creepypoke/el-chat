@@ -14,7 +14,7 @@ signUpView model =
   div []
     [ h1 [] [ text "Sing Up"]
     , Html.form
-      [ onEventSend "submit" SubmitSignUpForm ]
+      [ onEventSend "submit" (SubmitForm SignUp) ]
       [ div []
         [ label [ for "name" ]
             [ text "Name" ]
@@ -23,7 +23,7 @@ signUpView model =
             [ id "name"
             , type_ "text"
             , value model.authForm.name
-            , onInput (UpdateAuthForm Name)
+            , onInput (UpdateForm Auth Name)
             ]
             []
         ]
@@ -34,7 +34,7 @@ signUpView model =
         , input
             [ id "password"
             , type_ "password"
-            , onInput (UpdateAuthForm Password)
+            , onInput (UpdateForm Auth Password)
             ]
             []
         ]
@@ -45,7 +45,7 @@ signUpView model =
           , input
               [ id "password-confirm"
               , type_ "password"
-              , onInput (UpdateAuthForm PasswordConfirm)
+              , onInput (UpdateForm Auth PasswordConfirm)
               ]
               []
           ]
