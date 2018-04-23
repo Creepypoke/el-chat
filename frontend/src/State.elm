@@ -359,10 +359,17 @@ addMessage message room =
 
 joinRoomMessage : Message -> Room -> Room
 joinRoomMessage message room =
-  { room
-  | users = message.from :: room.users
-  , messages = message :: room.messages
-  }
+  let
+    isInRoom = List.any (\user -> user.name == message.from.name) room.users
+  in
+    case isInRoom of
+      True ->
+        { room |messages = message :: room.messages }
+      False ->
+        { room
+        | users = message.from :: room.users
+        , messages = message :: room.messages
+        }
 
 
 leaveRoomMessage : Message -> Room -> Room

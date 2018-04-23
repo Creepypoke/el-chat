@@ -21,6 +21,7 @@ roomView model =
         , div [class "messages-log"]
             (List.map messageView (List.reverse room.messages))
         , messageForm model room
+        , listOfUsers room
         ]
     RemoteData.Loading ->
       div []
@@ -121,3 +122,16 @@ emoji emojiString =
     , onClick (UpdateForm NewMessage Emoji emojiString)
     ]
     [ text emojiString ]
+
+
+listOfUsers : Room -> Html Msg
+listOfUsers room =
+  div
+    []
+    (List.map userInList room.users)
+
+
+userInList : User -> Html Msg
+userInList user =
+  li []
+    [ text user.name]
