@@ -9,8 +9,8 @@ import Utils exposing (..)
 import Views.Helpers exposing (errors)
 
 
-signUpView : Model -> Html Msg
-signUpView model =
+signUpView : AuthForm -> Html Msg
+signUpView authForm =
   div []
     [ h1 [] [ text "Sing Up"]
     , Html.form
@@ -22,7 +22,7 @@ signUpView model =
         , input
             [ id "name"
             , type_ "text"
-            , value model.authForm.name
+            , value authForm.name
             , onInput (UpdateForm Auth Name)
             ]
             []
@@ -53,6 +53,6 @@ signUpView model =
         [ button []
             [ text "Sing Up"]
         ]
-      , errors model.authForm.errors
+      , errors authForm.errors
       ]
     ]

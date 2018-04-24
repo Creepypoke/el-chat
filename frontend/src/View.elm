@@ -14,21 +14,21 @@ import Views.Navigation exposing (navigationView)
 view : Model -> Html Msg
 view model =
   div []
-    [ navigationView model
+    [ navigationView model.jwt model.currentRoute
     , div [class "content"]
       [ case model.currentRoute of
           HomeRoute ->
-            roomsView model
+            roomsView model.rooms model.newRoomForm
           SignUpRoute ->
-            signUpView model
+            signUpView model.authForm
           SignInRoute ->
-            signInView model
+            signInView model.authForm
           RoomRoute roomId ->
-            roomView model
+            roomView model.currentRoom model.newMessageForm
           NotFoundRoute ->
             notFoundView
           SignOutRoute ->
-            roomsView model
+            roomsView model.rooms model.newRoomForm
       ]
     , div []
       (List.map text model.messages)

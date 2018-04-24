@@ -59,7 +59,7 @@ init flags location =
   let
     route = extractRoute location
     model = initialModel location flags
-    msg = msgOnRoute route model
+    msg = msgOnRoute route
   in
     case msg of
       Nothing ->
@@ -85,7 +85,7 @@ update msg model =
     LocationChanged location ->
       let
         route = extractRoute location
-        msg = nextMsg route model
+        msg = nextMsg route model.currentRoute model.currentRoom
         newModel = { model | currentRoute = route }
       in
         case msg of
@@ -107,8 +107,8 @@ update msg model =
           }
         messageToSendString = encode 0 (messageToSendEncoder messageToSend)
       in
-        andThen (RequestRecentMessages room)
-          <| ( model, WebSocket.send model.wsUrl messageToSendString )
+        ( model, WebSocket.send model.wsUrl messageToSendString )
+          |> andThen (RequestRecentMessages room)
     RequestRecentMessages room ->
       let
         messageToSend =
@@ -132,14 +132,16 @@ update msg model =
       in
         case nextMsg of
           Just nextMsg ->
-            andThen nextMsg
-              <| ( model, WebSocket.send model.wsUrl messageToSendString )
+            ( model, WebSocket.send model.wsUrl messageToSendString )
+              |> andThen nextMsg
           Nothing ->
             ( model, WebSocket.send model.wsUrl messageToSendString )
     NewUrl url ->
       ( model, newUrl url )
     UpdateForm form field value ->
-      updateForm model form field value
+      ( updateModelForm model form field value
+      , Cmd.none
+      )
     SubmitForm form ->
       submitForm model form
     SignedIn jwtString ->
@@ -162,29 +164,30 @@ update msg model =
           in
             ( { model | newRoomForm = updateNewRoomFormErrors model.newRoomForm errors }, Cmd.none )
     SignOut ->
-      let
-        newModel =
-          { model
-          | jwt = Nothing
-          , jwtString = Nothing
-          }
-      in
-        ( newModel
-        , Cmd.batch [ newUrl "/", removeJwt () ]
-        )
+      ( { model
+        | jwt = Nothing
+        , jwtString = Nothing
+        }
+      , Cmd.batch [ newUrl "/", removeJwt () ]
+      )
     SaveToken ->
       case model.jwtString of
         Nothing ->
           update (NewUrl "/") model
         Just jwtString ->
-          let
-            jwt = decodeJwtString model.jwtString
-          in
-            ( { model | jwt = jwt }
-            , Cmd.batch [ newUrl "/", setJwt jwtString ]
-            )
+          ( { model | jwt = decodeJwtString model.jwtString }
+          , Cmd.batch [ newUrl "/", setJwt jwtString ]
+          )
     NewWsMessage message ->
-      ( processWsMessage model message, Cmd.none )
+      case model.currentRoom of
+        RemoteData.Success currentRoom ->
+          let
+            newCurrentRoom = processWsMessage currentRoom message
+            newModel = { model | currentRoom = RemoteData.succeed newCurrentRoom }
+          in
+            ( newModel, Cmd.none )
+        _ ->
+          ( model, Cmd.none )
     ToggleEmojiWidget bool ->
       let
         newMessageForm =
@@ -195,58 +198,77 @@ update msg model =
       in
         ( { model | newMessageForm = newMessageForm }, Cmd.none )
 
-updateForm : Model -> Form -> Field -> String -> (Model, Cmd Msg)
-updateForm model form field value =
+
+updateModelForm : Model -> Form -> Field -> String -> Model
+updateModelForm model form field value =
   case form of
     Auth ->
-      case field of
-        Name ->
-          ( { model | authForm = updateAuthFormName model.authForm value }, Cmd.none )
-        Password ->
-          ( { model | authForm = updateAuthFormPassword model.authForm value }, Cmd.none )
-        PasswordConfirm ->
-          ( { model | authForm = updateAuthFormPasswordConfirm model.authForm value }, Cmd.none )
-        _ ->
-          ( model, Cmd.none )
+      { model
+      | authForm = updateAuthForm model.authForm field value
+      }
     NewRoom ->
-      case field of
-        Name ->
-          ( { model | newRoomForm = updateNewRoomFormName model.newRoomForm value }, Cmd.none )
-        _ ->
-          ( model, Cmd.none )
+      { model
+      | newRoomForm = updateNewRoomForm model.newRoomForm field value
+      }
     NewMessage ->
       case model.currentRoom of
-        RemoteData.Success room ->
-          case field of
-            MessageText ->
-              ( { model | newMessageForm = showSuggestions room model.newMessageForm value }
-              , Cmd.none )
-            Emoji ->
-              let
-                newText = model.newMessageForm.text ++ value
-              in
-                ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm newText }
-                , Cmd.none )
-            Mention ->
-              ( { model | newMessageForm = setMention model.newMessageForm value }
-              , Cmd.none )
-            _ ->
-              ( model, Cmd.none )
+        RemoteData.Success currentRoom ->
+          { model
+          | newMessageForm = updateNewMessageForm model.newMessageForm currentRoom field value
+          }
         _ ->
-         ( model, Cmd.none )
+         model
     _ ->
-      (model, Cmd.none)
+      model
+
+
+updateAuthForm : AuthForm -> Field -> String -> AuthForm
+updateAuthForm authForm field value =
+  case field of
+    Name ->
+      { authForm | name = value }
+    Password ->
+      { authForm | password = value }
+    PasswordConfirm ->
+      { authForm | passwordConfirm = value }
+    _ ->
+      authForm
+
+
+updateNewRoomForm : NewRoomForm -> Field -> String -> NewRoomForm
+updateNewRoomForm newRoomForm field value =
+  case field of
+    Name ->
+      { newRoomForm | name = value }
+    _ ->
+      newRoomForm
+
+
+updateNewMessageForm : NewMessageForm -> Room -> Field -> String -> NewMessageForm
+updateNewMessageForm newMessageForm currentRoom field value =
+  case field of
+    MessageText ->
+      showSuggestions currentRoom newMessageForm value
+    Emoji ->
+      let
+        newText = newMessageForm.text ++ value
+      in
+        updateNewMessageFormText newMessageForm newText
+    Mention ->
+      setMention newMessageForm value
+    _ ->
+      newMessageForm
 
 
 setMention : NewMessageForm -> String -> NewMessageForm
-setMention form mentionUpdate =
+setMention form mentionString =
   let
-    mentions = (String.split "@" form.text)
-    s = (List.take (List.length mentions - 1) mentions) ++ [ mentionUpdate ++ " " ]
-    d = String.join "@" s
+    mentionsSections = (String.split "@" form.text)
+    newMentionsSections = (List.take (List.length mentionsSections - 1) mentionsSections) ++ [ mentionString ++ " " ]
+    newText = String.join "@" newMentionsSections
   in
     { form |
-      text = d,
+      text = newText,
       suggestions = []
     }
 
@@ -254,8 +276,8 @@ setMention form mentionUpdate =
 showSuggestions : Room -> NewMessageForm -> String -> NewMessageForm
 showSuggestions room form value =
   let
-    mentions = (String.split "@" value)
-    lastMention = List.head (List.reverse mentions)
+    mentionsSections = String.split "@" value
+    lastMention = List.head (List.reverse mentionsSections)
     formWithNewText = { form | text = value }
   in
     case (lastMention, value) of
@@ -366,32 +388,27 @@ parseBadStatus response =
       ]
 
 
-processWsMessage : Model -> String -> Model
-processWsMessage model wsMessageString =
+processWsMessage : Room -> String -> Room
+processWsMessage currentRoom wsMessageString =
   case decodeWsMessage wsMessageString of
     Result.Ok wsMessage ->
-      case model.currentRoom of
-        RemoteData.Success currentRoom ->
-          if wsMessage.roomId == currentRoom.id then
-            updateCurrentRoom currentRoom model wsMessage
-          else
-            model
-        _ ->
-          model
+      if wsMessage.roomId == currentRoom.id then
+        updateCurrentRoom currentRoom wsMessage
+      else
+        currentRoom
     Result.Err err ->
-      { model | messages = [toString(err)] } -- debug mode
+      currentRoom
 
 
-updateCurrentRoom : Room -> Model -> WsMessage -> Model
-updateCurrentRoom currentRoom model wsMessage =
+updateCurrentRoom : Room -> WsMessage -> Room
+updateCurrentRoom currentRoom wsMessage =
   let
     roomMessages = currentRoom.messages
     oneMessage = parseOneMessage wsMessage.message
     manyMessages = parseListMessages wsMessage.messages
     newMessages = oneMessage ++ manyMessages
-    newCurrentRoom = RemoteData.succeed (List.foldr addMessage currentRoom newMessages)
   in
-    { model | currentRoom  = newCurrentRoom }
+    List.foldr addMessage currentRoom newMessages
 
 
 addMessage : Message -> Room -> Room
@@ -472,24 +489,8 @@ updateCurrentRoomMessages room messages =
   RemoteData.succeed { room | messages = messages }
 
 
-updateRoomMessages : WebData (List Room) -> Room -> List Message -> WebData (List Room)
-updateRoomMessages rooms room messages =
-  case rooms of
-    RemoteData.Success rooms ->
-      RemoteData.succeed (List.map
-        (\n ->
-          case n.id == room.id of
-            True ->
-              { n | messages = messages }
-            False ->
-              n
-        ) rooms)
-    _ ->
-      rooms
-
-
-msgOnRoute : Route -> Model -> Maybe Msg
-msgOnRoute route model =
+msgOnRoute : Route -> Maybe Msg
+msgOnRoute route =
   case route of
     RoomRoute roomId ->
       Just (RequestRoom roomId)
@@ -501,14 +502,14 @@ msgOnRoute route model =
       Nothing
 
 
-nextMsg : Route -> Model -> Maybe Msg
-nextMsg nextRoute model =
+nextMsg : Route -> Route -> WebData Room -> Maybe Msg
+nextMsg nextRoute currentRoute currentRoom =
   let
-    msg = msgOnRoute nextRoute model
+    msg = msgOnRoute nextRoute
   in
-    case model.currentRoute of
+    case currentRoute of
       RoomRoute roomId ->
-        case model.currentRoom of
+        case currentRoom of
           RemoteData.Success room ->
             Just (LeaveRoom room msg)
           _ ->

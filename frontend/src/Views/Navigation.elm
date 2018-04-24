@@ -5,23 +5,22 @@ import Html.Attributes exposing (href, class, classList)
 
 
 import Types exposing (..)
-import Utils exposing (..)
 import Routing exposing (extractUrl)
 import Views.Helpers exposing (..)
 
 
-navigationView : Model -> Html Msg
-navigationView model =
+navigationView : Maybe JwtToken -> Route -> Html Msg
+navigationView jwt currentRoute =
   let
     authLinks =
-      case model.jwt of
+      case jwt of
         Nothing ->
-          [ navItem SignInRoute model.currentRoute "Sign In"
-          , navItem SignUpRoute model.currentRoute "Sign Up"]
+          [ navItem SignInRoute currentRoute "Sign In"
+          , navItem SignUpRoute currentRoute "Sign Up"]
         Just jwt ->
-          [ navItem SignOutRoute model.currentRoute "Sign Out" ]
+          [ navItem SignOutRoute currentRoute "Sign Out" ]
     commonLinks =
-      [ navItem HomeRoute model.currentRoute "Home"]
+      [ navItem HomeRoute currentRoute "Home"]
   in
     div [class "header"]
       (List.concat [commonLinks, authLinks])

@@ -6,21 +6,22 @@ import Http
 import Html exposing (..)
 import Html.Events exposing (onInput, onClick)
 import Html.Attributes exposing (..)
+import RemoteData exposing (WebData)
 
 import Types exposing (..)
 import Utils exposing (..)
 
 
-roomView : Model -> Html Msg
-roomView model =
-  case model.currentRoom of
+roomView : WebData Room -> NewMessageForm -> Html Msg
+roomView currentRoom newMessageForm =
+  case currentRoom of
     RemoteData.Success room ->
       div [ class "chat-window" ]
         [ h1 []
           [ text room.name ]
         , div [ class "messages-log" ]
             (List.map messageView room.messages)
-        , messageForm model.newMessageForm room
+        , messageForm newMessageForm room
         ]
     RemoteData.Loading ->
       div []

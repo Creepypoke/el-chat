@@ -8,8 +8,8 @@ import Types exposing (..)
 import Utils exposing (..)
 import Views.Helpers exposing (errors)
 
-signInView : Model -> Html Msg
-signInView model =
+signInView : AuthForm -> Html Msg
+signInView authForm =
   div []
     [ h1 [] [ text "Sing In"]
     , Html.form
@@ -21,7 +21,7 @@ signInView model =
         , input
             [ id "name"
             , type_ "text"
-            , value model.authForm.name
+            , value authForm.name
             , onInput (UpdateForm Auth Name)
             ]
             []
@@ -41,7 +41,7 @@ signInView model =
         [ button []
             [ text "Sing In"]
         ]
-      , errors model.authForm.errors
+      , errors authForm.errors
       ]
     ]
 

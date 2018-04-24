@@ -9,13 +9,13 @@ import Types exposing (..)
 import Utils exposing (..)
 import Views.Helpers exposing (errors)
 
-roomsView : Model -> Html Msg
-roomsView model =
+roomsView : WebData (List Room) -> NewRoomForm -> Html Msg
+roomsView rooms newRoomForm =
   div []
     [ h2 []
       [ text "Rooms" ]
-    , viewRoomsOrError model.rooms
-    , newRoomForm model
+    , viewRoomsOrError rooms
+    , newRoomFormView newRoomForm
     ]
 
 
@@ -42,8 +42,8 @@ viewRooms rooms =
       [ text "There is no rooms, yet" ]
 
 
-newRoomForm : Model -> Html Msg
-newRoomForm model =
+newRoomFormView : NewRoomForm -> Html Msg
+newRoomFormView newRoomForm =
   div []
     [ h3 [] [ text "Add room"]
     , Html.form
@@ -55,14 +55,14 @@ newRoomForm model =
         , input
             [ id "name"
             , type_ "text"
-            , value model.newRoomForm.name
+            , value newRoomForm.name
             , onInput (UpdateForm NewRoom Name)
             ]
             []
         , button []
             [ text "Add"]
         ]
-      , errors model.newRoomForm.errors
+      , errors newRoomForm.errors
       ]
     ]
 
