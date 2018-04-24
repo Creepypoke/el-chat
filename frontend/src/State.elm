@@ -50,6 +50,7 @@ emptyNewMessageForm : NewMessageForm
 emptyNewMessageForm =
   { text = ""
   , showEmojiWidget = False
+  , suggestions = []
   }
 
 
@@ -189,6 +190,7 @@ update msg model =
         newMessageForm =
           { text = model.newMessageForm.text
           , showEmojiWidget = bool
+          , suggestions = model.newMessageForm.suggestions
           }
       in
         ( { model | newMessageForm = newMessageForm }, Cmd.none )
@@ -213,18 +215,66 @@ updateForm model form field value =
         _ ->
           ( model, Cmd.none )
     NewMessage ->
-      case field of
-        MessageText ->
-          ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm value }, Cmd.none )
-        Emoji ->
-          let
-            newText = model.newMessageForm.text ++ value
-          in
-            ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm newText }, Cmd.none )
+      case model.currentRoom of
+        RemoteData.Success room ->
+          case field of
+            MessageText ->
+              ( { model | newMessageForm = showSuggestions room model.newMessageForm value }
+              , Cmd.none )
+            Emoji ->
+              let
+                newText = model.newMessageForm.text ++ value
+              in
+                ( { model | newMessageForm = updateNewMessageFormText model.newMessageForm newText }
+                , Cmd.none )
+            Mention ->
+              ( { model | newMessageForm = setMention model.newMessageForm value }
+              , Cmd.none )
+            _ ->
+              ( model, Cmd.none )
         _ ->
-          ( model, Cmd.none )
+         ( model, Cmd.none )
     _ ->
       (model, Cmd.none)
+
+
+setMention : NewMessageForm -> String -> NewMessageForm
+setMention form mentionUpdate =
+  let
+    mentions = (String.split "@" form.text)
+    s = (List.take (List.length mentions - 1) mentions) ++ [ mentionUpdate ++ " " ]
+    d = String.join "@" s
+  in
+    { form |
+      text = d,
+      suggestions = []
+    }
+
+
+showSuggestions : Room -> NewMessageForm -> String -> NewMessageForm
+showSuggestions room form value =
+  let
+    mentions = (String.split "@" value)
+    lastMention = List.head (List.reverse mentions)
+    formWithNewText = { form | text = value }
+  in
+    case (lastMention, value) of
+      (Just mention, "") ->
+        { formWithNewText
+        | suggestions = []
+        }
+      (Just mention, _) ->
+        { formWithNewText
+        | suggestions = getSuggestions room.users mention
+        }
+      _ ->
+        formWithNewText
+
+
+getSuggestions : List User -> String -> List String
+getSuggestions roomUsers filterStr =
+  List.filter (\user -> String.startsWith filterStr user.name) roomUsers
+    |> List.map (\user -> user.name)
 
 
 submitForm : Model -> Form -> (Model, Cmd Msg)
@@ -443,14 +493,6 @@ msgOnRoute route model =
   case route of
     RoomRoute roomId ->
       Just (RequestRoom roomId)
-      -- let
-      --   room = findRoomById model.rooms roomId
-      -- in
-      --   case room of
-      --     Just room ->
-      --       Just (JoinRoom room)
-      --     Nothing ->
-      --       Nothing
     HomeRoute ->
       Just RequestRooms
     SignOutRoute ->
@@ -478,7 +520,7 @@ nextMsg nextRoute model =
 andThen : Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 andThen msg ( model, cmd ) =
     let
-        ( newmodel, newCmd ) =
-            update msg model
+      ( newmodel, newCmd ) =
+        update msg model
     in
-        newmodel ! [ cmd, newCmd ]
+      newmodel ! [ cmd, newCmd ]

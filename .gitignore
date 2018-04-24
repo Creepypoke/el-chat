@@ -3,3 +3,4 @@ elm-stuff
 dist/elm.js
 dist/main.css
 .DS_Store
+.idea

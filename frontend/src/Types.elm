@@ -36,6 +36,7 @@ type alias NewRoomForm =
 type alias NewMessageForm =
   { text : String
   , showEmojiWidget : Bool
+  , suggestions : List String
   }
 
 
@@ -129,6 +130,7 @@ type Field
   | PasswordConfirm
   | MessageText
   | Emoji
+  | Mention
 
 
 type Route

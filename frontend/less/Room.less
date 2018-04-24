@@ -3,10 +3,16 @@ h2 {
 }
 
 .messages-log {
-  overflow-y: scroll;
-  height: 300px;
+  flex: 1;
+  overflow: auto;
   display: flex;
+  height: 300px;
   flex-direction: column-reverse;
+}
+
+.chat-window{
+  display:flex;
+  flex-direction:column;
 }
 
 .emoji-icon {
@@ -25,4 +31,23 @@ h2 {
 
 .emoji {
   cursor: pointer;
+}
+
+
+.mention-suggest {
+  position: absolute;
+  background-color: @secondary-color;
+  color: white;
+  list-style-type: none;
+  padding: 10px;
+  margin: 1px;
+
+  li {
+    cursor: pointer;
+
+    &:hover {
+      color: @secondary-color;
+      background-color: white;
+    }
+  }
 }

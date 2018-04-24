@@ -15,17 +15,16 @@ roomView : Model -> Html Msg
 roomView model =
   case model.currentRoom of
     RemoteData.Success room ->
-      div []
+      div [ class "chat-window" ]
         [ h1 []
-          [ text (room.name ++ " # " ++ room.id) ]
-        , div [class "messages-log"]
-            (List.map messageView (List.reverse room.messages))
-        , messageForm model room
-        , listOfUsers room
+          [ text room.name ]
+        , div [ class "messages-log" ]
+            (List.map messageView room.messages)
+        , messageForm model.newMessageForm room
         ]
     RemoteData.Loading ->
       div []
-        [ text "loading ..."]
+        [ text "loading ..." ]
     RemoteData.Failure err ->
       case err of
         Http.BadStatus res ->
@@ -63,8 +62,8 @@ messageView message =
         []
 
 
-messageForm : Model -> Room -> Html Msg
-messageForm model room =
+messageForm : NewMessageForm -> Room -> Html Msg
+messageForm newMessageForm room =
   div []
     [ Html.form
       [ onEventSend "submit" (SubmitForm NewMessage)]
@@ -72,7 +71,7 @@ messageForm model room =
         [ input
             [ id "message"
             , type_ "text"
-            , value model.newMessageForm.text
+            , value newMessageForm.text
             , onInput (UpdateForm NewMessage MessageText)
             ]
             []
@@ -80,14 +79,18 @@ messageForm model room =
             [ text "Send"]
         ]
       ]
+    , if List.length newMessageForm.suggestions > 0 then
+        mentionSuggestions newMessageForm.suggestions
+      else
+        text ""
     , div
         [ class "emoji-icon"
-        , onClick (ToggleEmojiWidget (not model.newMessageForm.showEmojiWidget ))
+        , onClick (ToggleEmojiWidget (not newMessageForm.showEmojiWidget ))
         ]
         []
     , div
         [ class "emoji-widget"]
-        (case model.newMessageForm.showEmojiWidget of
+        (case newMessageForm.showEmojiWidget of
           True ->
             [ emojiWidget ]
           False ->
@@ -124,14 +127,15 @@ emoji emojiString =
     [ text emojiString ]
 
 
-listOfUsers : Room -> Html Msg
-listOfUsers room =
-  div
-    []
-    (List.map userInList room.users)
+userInList : String -> Html Msg
+userInList userName =
+  li
+    [ onClick (UpdateForm NewMessage Mention userName)]
+    [ text userName]
 
 
-userInList : User -> Html Msg
-userInList user =
-  li []
-    [ text user.name]
+mentionSuggestions : List String -> Html Msg
+mentionSuggestions suggestions =
+  ul
+    [ class "mention-suggest"]
+    (List.map userInList suggestions)
