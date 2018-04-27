@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "elm-make frontend/Main.elm --output=dist/elm.js",
-    "watch": "chokidar \"**/*.elm\" -c \"elm-make frontend/src/Main.elm --output dist/elm.js\" --initial",
+    "watch": "chokidar \"**/*.elm\" -c \"elm-make frontend/src/Main.elm --output dist/elm.js --debug\" --initial",
     "less-watch": "chokidar \"**/*.less\" -c \"lessc frontend/less/main.less dist/Main.css\" --initial",
     "dev": "node_modules/.bin/nodemon backend/server.js -i dist/*",
     "test": "echo \"Error: no test specified\" && exit 1"
