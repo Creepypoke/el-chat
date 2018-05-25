@@ -108,18 +108,6 @@ update msg model =
         messageToSendString = encode 0 (messageToSendEncoder messageToSend)
       in
         ( model, WebSocket.send model.wsUrl messageToSendString )
-          |> andThen (RequestRecentMessages room)
-    RequestRecentMessages room ->
-      let
-        messageToSend =
-          { roomId = room.id
-          , kind = Recent
-          , text = Just "10"
-          , jwt = model.jwtString
-          }
-        messageToSendString = encode 0 (messageToSendEncoder messageToSend)
-      in
-        ( model, WebSocket.send model.wsUrl messageToSendString )
     LeaveRoom room nextMsg ->
       let
         messageToSend =

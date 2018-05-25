@@ -105,7 +105,6 @@ type Msg
   | RoomResponse (WebData Room)
   | RoomsResponse (WebData (List Room))
   | JoinRoom Room
-  | RequestRecentMessages Room
   | LeaveRoom Room (Maybe Msg)
   | UpdateForm Form Field String
   | SubmitForm Form

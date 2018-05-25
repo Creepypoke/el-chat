@@ -36,9 +36,6 @@ module.exports = (app, server, db) => {
       case consts.MESSAGE_TYPES.TEXT:
         textMessage(user, message.roomId, message.text)
         break
-      case consts.MESSAGE_TYPES.RECENT:
-        recentMessages(user, message.roomId, message.text)
-        break
       default:
         const errorMessage = createErrorMessage(message.roomId, "unsupported kind of message")
         ws.send(JSON.stringify(errorMessage))
@@ -60,6 +57,8 @@ module.exports = (app, server, db) => {
     room.users[user.id] = user
     const usersMessage = createUsersMessage(room)
     notifyRoom(room, usersMessage)
+
+    recentMessages(user.ws, room.id, 20)
   }
 
   function leaveRoom(user, roomId) {
@@ -84,15 +83,15 @@ module.exports = (app, server, db) => {
     })
   }
 
-  function recentMessages(user, roomId, count) {
+  function recentMessages(userWs, roomId, count) {
     messagesCollection
     .find({ roomId: roomId })
-    .sort("datetime", 1)
+    .sort("datetime", -1)
     .toArray((err, messages) => {
       if (err) return
 
       const message = createRecentMessage(roomId, messages)
-      user.ws.send(JSON.stringify(message))
+      userWs.send(JSON.stringify(message))
     })
   }
 
