@@ -54,6 +54,7 @@ type alias Message =
   , from : User
   , text : String
   , kind : MessageKind
+  , users : Maybe (List User)
   }
 
 

@@ -403,7 +403,6 @@ processWsMessage currentRoom wsMessageString =
 updateCurrentRoom : Room -> WsMessage -> Room
 updateCurrentRoom currentRoom wsMessage =
   let
-    roomMessages = currentRoom.messages
     oneMessage = parseOneMessage wsMessage.message
     manyMessages = parseListMessages wsMessage.messages
     newMessages = oneMessage ++ manyMessages
@@ -417,7 +416,11 @@ addMessage message room =
     Text ->
       { room | messages = message :: room.messages }
     Users ->
-      room
+      case message.users of
+        Just users ->
+          { room | users = users }
+        Nothing ->
+          room
     _ ->
       room
 

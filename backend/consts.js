@@ -3,5 +3,6 @@ exports.MESSAGE_TYPES = {
   LEAVE: 'leave',
   TEXT: 'text',
   ERROR: 'error',
-  RECENT: 'recent'
+  RECENT: 'recent',
+  USERS: 'users'
 }

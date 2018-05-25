@@ -67,6 +67,7 @@ messageDecoder =
     |> required "from" userDecoder
     |> required "text" string
     |> required "kind" messageKind
+    |> optional "users" (maybe (list userDecoder)) Nothing
 
 
 errorMessageDecoder : Decoder ErrorMessage
@@ -103,6 +104,8 @@ messageKind =
           succeed Error
         "recent" ->
           succeed Recent
+        "users" ->
+          succeed Users
         _ ->
           fail <| "Unsupported message kind"
   in

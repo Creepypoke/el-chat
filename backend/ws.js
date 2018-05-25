@@ -4,6 +4,12 @@ const jwt = require('jsonwebtoken')
 const consts = require('./consts')
 const utils = require('./utils')
 
+
+const systemUser = {
+  name: "Sytem",
+  id: "0"
+}
+
 module.exports = (app, server, db) => {
   app.rooms = {}
 
@@ -48,13 +54,22 @@ module.exports = (app, server, db) => {
         users: {}
       }
     }
-    app.rooms[roomId].users[user.id] = user
+
+    const room = app.rooms[roomId]
+
+    room.users[user.id] = user
+    const usersMessage = createUsersMessage(room)
+    notifyRoom(room, usersMessage)
   }
 
   function leaveRoom(user, roomId) {
     if (!app.rooms[roomId]) return
 
-    delete app.rooms[roomId].users[user.id]
+    const room = app.rooms[roomId]
+    delete room.users[user.id]
+
+    const usersMessage = createUsersMessage(room)
+    notifyRoom(room, usersMessage)
   }
 
   function textMessage(user, roomId, text) {
@@ -101,6 +116,24 @@ module.exports = (app, server, db) => {
     }
   }
 
+
+  function createUsersMessage (room) {
+    const users = Object.values(room.users).map(cleanUser)
+
+    return {
+      roomId: room.id,
+      message: {
+        text: "",
+        datetime: Date(),
+        kind: consts.MESSAGE_TYPES.USERS,
+        from: systemUser,
+        users: users
+      },
+      messages: []
+    }
+  }
+
+
   function createErrorMessage (roomId, errorText) {
     return {
       roomId: roomId,
@@ -108,7 +141,7 @@ module.exports = (app, server, db) => {
         datetime: Date(),
         text : errorText,
         kind : consts.MESSAGE_TYPES.ERROR,
-        from: { name: "" }
+        from: systemUser
       },
       messages: []
     }
