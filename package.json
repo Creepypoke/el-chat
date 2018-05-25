@@ -15,16 +15,16 @@
   "devDependencies": {
     "chokidar-cli": "^1.2.0",
     "elm": "^0.18.0",
-    "less": "^3.0.1",
+    "less": "^3.0.4",
     "nodemon": "^1.17.5"
   },
   "dependencies": {
-    "body-parser": "^1.18.2",
+    "body-parser": "^1.18.3",
     "express": "^4.16.3",
-    "jsonwebtoken": "^8.2.0",
+    "jsonwebtoken": "^8.2.1",
     "md5": "^2.2.1",
-    "mongodb": "^3.0.5",
+    "mongodb": "^3.0.8",
     "morgan": "^1.9.0",
-    "ws": "^5.1.1"
+    "ws": "^5.2.0"
   }
 }
