@@ -148,3 +148,4 @@ type MessageKind
   | Leave
   | Error
   | Recent
+  | Users

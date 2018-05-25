@@ -414,37 +414,12 @@ updateCurrentRoom currentRoom wsMessage =
 addMessage : Message -> Room -> Room
 addMessage message room =
   case message.kind of
-    Join ->
-      joinRoomMessage message room
     Text ->
       { room | messages = message :: room.messages }
-    Leave ->
-      leaveRoomMessage message room
+    Users ->
+      room
     _ ->
       room
-
-
-joinRoomMessage : Message -> Room -> Room
-joinRoomMessage message room =
-  let
-    isInRoom = List.any (\user -> user.name == message.from.name) room.users
-  in
-    case isInRoom of
-      True ->
-        { room |messages = message :: room.messages }
-      False ->
-        { room
-        | users = message.from :: room.users
-        , messages = message :: room.messages
-        }
-
-
-leaveRoomMessage : Message -> Room -> Room
-leaveRoomMessage message room =
-  { room
-  | users = List.filter (\n -> n.name /= message.from.name) room.users
-  , messages = message :: room.messages
-  }
 
 
 findRoom : WebData (List Room) -> String -> Maybe Room

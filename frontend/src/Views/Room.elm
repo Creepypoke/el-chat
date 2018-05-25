@@ -49,12 +49,6 @@ messageView message =
             [ text (message.from.name ++ ":") ]
         , text (" " ++ message.text )
         ]
-    Join ->
-      div []
-        [ text (" " ++ message.text ) ]
-    Leave ->
-      div []
-        [ text (" " ++ message.text ) ]
     Error ->
       div []
         [ text (" " ++ message.text ) ]

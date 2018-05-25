@@ -99,10 +99,6 @@ messageKind =
       case raw of
         "text" ->
           succeed Text
-        "join" ->
-          succeed Join
-        "leave" ->
-          succeed Leave
         "error" ->
           succeed Error
         "recent" ->

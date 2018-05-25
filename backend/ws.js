@@ -49,27 +49,12 @@ module.exports = (app, server, db) => {
       }
     }
     app.rooms[roomId].users[user.id] = user
-
-    const joinMessage = createJoinMessage(roomId, user)
-    const normalizedMessage = utils.messageNormalizer(joinMessage)
-
-    messagesCollection.insertOne(normalizedMessage, (err, result) => {
-      joinMessage["id"] = result.inseredId
-      notifyRoom(app.rooms[roomId], joinMessage)
-    })
   }
 
   function leaveRoom(user, roomId) {
     if (!app.rooms[roomId]) return
 
-    const leaveMessage = createLeaveMessage(roomId, user)
-    const normalizedMessage = utils.messageNormalizer(leaveMessage)
-
-    messagesCollection.insertOne(normalizedMessage, (err, result) => {
-      leaveMessage["id"] = result.inseredId
-      delete app.rooms[roomId].users[user.id]
-      notifyRoom(app.rooms[roomId], leaveMessage)
-    })
+    delete app.rooms[roomId].users[user.id]
   }
 
   function textMessage(user, roomId, text) {
