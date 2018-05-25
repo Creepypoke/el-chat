@@ -16,7 +16,7 @@
     "chokidar-cli": "^1.2.0",
     "elm": "^0.18.0",
     "less": "^3.0.1",
-    "nodemon": "^1.17.2"
+    "nodemon": "^1.17.5"
   },
   "dependencies": {
     "body-parser": "^1.18.2",
